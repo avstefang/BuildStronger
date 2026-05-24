@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="API/API.csproj" />
+  <Project Path="MApp/MApp.csproj" />
+  <Project Path="Test/Test.csproj" />
+  <Project Path="Web/Web.csproj" />
+</Solution>
