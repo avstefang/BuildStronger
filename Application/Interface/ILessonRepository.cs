@@ -7,8 +7,8 @@ namespace Application.Interface;
 
 public interface ILessonRepository : IRepository<Lesson>
 {
-    Task<Lesson> GetLessonAsync(Lesson lesson);
-    Task<IEnumerable<Lesson>> GetAllLessonsAsync();
+    Task<Lesson> RetrieveLessonByNameAsync(string lessonName);
+    Task<IEnumerable<Lesson>> RetrieveAllLessonsAsync();
     Task AddLessonAsync(Lesson lesson);
     Task UpdateLessonAsync(Lesson lesson);
     Task DeleteLessonAsync(Lesson lesson);

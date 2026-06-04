@@ -71,6 +71,25 @@ public class Athlete(EmailAddress emailAddress, FullName fullName, string passwo
 
     public void SetUsername(string username)
     {
+        if (Username == username)
+            throw new ArgumentException("New username must be different from the current one.", nameof(username));
+
         Username = username;
+    }
+
+    public void ChangeEmailAddress(EmailAddress newEmailAddress)
+    {
+        if (EmailAddress == newEmailAddress)
+            throw new ArgumentException("New email address must be different from the current one.", nameof(newEmailAddress));
+
+        EmailAddress = newEmailAddress;
+    }
+
+    public void ChangeFullName(FullName newFullName)
+    {
+        if (FullName == newFullName)
+            throw new ArgumentException("New full name must be different from the current one.", nameof(newFullName));
+
+        FullName = newFullName;
     }
 }

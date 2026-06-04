@@ -7,8 +7,9 @@ namespace Application.Interface;
 
 public interface IReservationRepository : IRepository<Reservation>
 {
-    Task<Reservation> GetReservationAsync(Reservation reservation);
-    Task<IEnumerable<Reservation>> GetAllReservationsAsync();
+    Task<Reservation> RetrieveReservationByNameAsync(string reservationName);
+    Task<IEnumerable<Reservation>> RetrieveAllReservationsByLessonAsync(Lesson lesson);
+    Task<IEnumerable<Reservation>> RetrieveAllReservationsAsync();
     Task AddReservationAsync(Reservation reservation);
     Task UpdateReservationAsync(Reservation reservation);
     Task DeleteReservationAsync(Reservation reservation);

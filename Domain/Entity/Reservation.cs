@@ -7,17 +7,19 @@ public class Reservation
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public Athlete Athlete { get; private set; }
+    public Lesson Lesson { get; private set; }
     public DateTime ReservationDate { get; private set; }
     public ReservationStatus Status { get; private set; } = ReservationStatus.Waitinglist;
     public DateTime ReservedAt { get; private set; } = DateTime.Now;
 
-    public Reservation(Athlete athlete, DateTime reservationDate)
+    public Reservation(Athlete athlete, DateTime reservationDate, Lesson lesson)
     {
         if (DateTime.Now.AddDays(7) > reservationDate)
             throw new DomainException("A reservation cannot be made less than 7 days in advance.");
 
         Athlete = athlete;
         ReservationDate = reservationDate;
+        Lesson = lesson;
     }
 
     public void CheckIn()
