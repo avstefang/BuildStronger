@@ -7,8 +7,8 @@ namespace Application.Interface;
 
 public interface ISubscriptionPlanRepository : IRepository<SubscriptionPlan>
 {
-    Task<SubscriptionPlan> GetSubscriptionPlanAsync(SubscriptionPlan plan);
-    Task<IEnumerable<SubscriptionPlan>> GetAllSubscriptionPlansAsync();
+    Task<SubscriptionPlan> RetrieveSubscriptionPlanByNameAsync(string name);
+    Task<IEnumerable<SubscriptionPlan>> RetrieveAllSubscriptionPlansAsync();
     Task AddSubscriptionPlanAsync(SubscriptionPlan plan);
     Task UpdateSubscriptionPlanAsync(SubscriptionPlan plan);
     Task DeleteSubscriptionPlanAsync(SubscriptionPlan plan);

@@ -1,14 +1,23 @@
+using Domain.Enum;
 using System;
 
 namespace Domain.Entity;
 
-public class SubscriptionPlan(string name, decimal price, int durationInMonths, int monthlyCreditAmount)
-{
+public class SubscriptionPlan(
+    string name,
+    decimal price,
+    int durationInMonths,
+    int monthlyCreditAmount,
+    PaymentMethod paymentMethod = PaymentMethod.Wero,
+    Currency currency = Currency.EUR
+) {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string Name { get; private set; } = name;
     public decimal Price { get; private set; } = price;
     public int DurationInMonths { get; private set; } = durationInMonths;
     public int MonthlyCreditAmount { get; private set; } = monthlyCreditAmount;
+    public PaymentMethod PaymentMethod { get; private set; } = paymentMethod;
+    public Currency Currency { get; private set; } = currency;
 
     public void ChangeName(string newName)
     {

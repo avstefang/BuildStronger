@@ -13,4 +13,5 @@ public interface IAthleteRepository : IRepository<Athlete>
     Task AddAthleteAsync(Athlete athlete);
     Task UpdateAthleteAsync(Athlete athlete);
     Task DeleteAthleteByEmailAsync(EmailAddress email);
+    Task AddSubscriptionAsync(Athlete athlete, Subscription subscription);
 }

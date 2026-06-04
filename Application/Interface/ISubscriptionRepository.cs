@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Domain.Entity;
+using Domain.Enum;
 
 namespace Application.Interface;
 
 public interface ISubscriptionRepository : IRepository<Subscription>
 {
-    Task<Subscription> GetSubscriptionAsync(Subscription subscription);
-    Task<IEnumerable<Subscription>> GetAllSubscriptionsAsync();
-    Task AddSubscriptionAsync(Subscription subscription);
-    Task UpdateSubscriptionAsync(Subscription subscription);
-    Task DeleteSubscriptionAsync(Subscription subscription);
+    Task<Subscription> RetrieveSubscriptionAsync(Subscription subscription);
+    Task<IEnumerable<Subscription>> RetrieveAllSubscriptionsAsync();
+    Task<SubscriptionStatus> RegisterSubscriptionAsync(Subscription subscription);
+    Task<SubscriptionStatus> UpdateSubscriptionStatusAsync(Subscription subscription);
 }

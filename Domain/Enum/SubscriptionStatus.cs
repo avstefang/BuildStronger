@@ -8,5 +8,7 @@ public enum SubscriptionStatus
 {
     Active,
     Cancelled,
-    Expired
+    Expired,
+    WaitingActivation,
+    Failed
 }

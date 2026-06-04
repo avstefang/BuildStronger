@@ -48,18 +48,20 @@
     - status: DEFAULT FALSE, ENUM[Active, Cancelled, Expired]
 * subscriptionPlan
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
     - price: NOT NULL, DECIMAL
     - durationInMonths: INT, NOT NULL
     - monthlyCreditAmount: NOT NULL, INT
+    - paymentMethod: NOT NULL, ENUM, Default Wero (others to come later)
+    - paymentCurrency: NOT NULL, ENUM default eur
 * payment
     - id: GUID, NOT NULL, Increment, Unique, PK
     - subscriptionId: GUID, NOT NULL, FK
     - amount: DECIMAL, NOT NULL
     - status: NOT NULL, ENUM[Pending, Succeeded, Failed, Refunded, Cancelled]
     - payedAt: DATETIME2, NOT NULL
-    - method: NOT NULL, ENUM, Default IDEAL/Wero (others to come later)
-    - stripeId: string, NOT NULL
+    - method: NOT NULL, ENUM, Default Wero (others to come later)
+    - processorId: string, NOT NULL
     - currency: NOT NULL, ENUM default eur
 * equipment
     - id: GUID, NOT NULL, Increment, Unique, PK

@@ -55,6 +55,12 @@ public class Athlete(EmailAddress emailAddress, FullName fullName, string passwo
         _subscriptions.Add(subscription);
     }
 
+    public Subscription? GetActiveSubscription() =>
+        _subscriptions.FirstOrDefault(s => s.Status == SubscriptionStatus.Active);
+
+    public Subscription? GetLastSubscription() =>
+        _subscriptions.OrderByDescending(s => s.StartDate).FirstOrDefault() ?? null;
+
     public void SetPassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password))

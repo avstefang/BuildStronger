@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Domain.Entity;
+using Domain.Enum;
 
 namespace Application.Interface;
 
 public interface IPaymentRepository : IRepository<Payment>
 {
-    Task<Payment> GetPaymentAsync(Payment payment);
-    Task<IEnumerable<Payment>> GetAllPaymentsAsync();
-    Task AddPaymentAsync(Payment payment);
-    Task UpdatePaymentAsync(Payment payment);
-    Task DeletePaymentAsync(Payment payment);
+    Task<Payment> RetrievePaymentAsync(Payment payment);
+    Task<PaymentStatus> CreatePaymentAsync(Payment payment);
+    Task<bool> VerifyPaymentAsync(Payment payment);
 }

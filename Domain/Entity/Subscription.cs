@@ -10,7 +10,7 @@ public class Subscription(SubscriptionPlan subscriptionPlan, DateOnly? startDate
     public SubscriptionPlan SubscriptionPlan { get; private set; } = subscriptionPlan ?? throw new ArgumentNullException(nameof(subscriptionPlan));
     public DateOnly StartDate { get; private set; } = startDate ?? DateOnly.FromDateTime(DateTime.Now);
     public bool AutoRenew { get; private set; } = false;
-    public SubscriptionStatus Status { get; private set; }
+    public SubscriptionStatus Status { get; private set; } = SubscriptionStatus.WaitingActivation;
 
     public void EnableAutoRenewal()
     {
@@ -24,14 +24,24 @@ public class Subscription(SubscriptionPlan subscriptionPlan, DateOnly? startDate
 
     public void CancelSubscription()
     {
+        if (Status != SubscriptionStatus.Active)
+        {
+            throw new SubscriptionException("Only active subscriptions can be cancelled.", SubscriptionPlan.Name);
+        }
+
         Status = SubscriptionStatus.Cancelled;
     }
 
     public void ActivateSubscription()
     {
-        if (Status == SubscriptionStatus.Expired || Status == SubscriptionStatus.Cancelled)
+        if (Status == SubscriptionStatus.Expired || Status == SubscriptionStatus.Cancelled || Status == SubscriptionStatus.Failed)
         {
-            throw new InvalidOperationException("Cannot reactivate an expired or cancelled subscription.");
+            throw new InvalidOperationException("Cannot reactivate an expired, failed, or cancelled subscription.");
+        }
+
+        if (startDate >= DateOnly.FromDateTime(DateTime.Now))
+        {
+            throw new InvalidOperationException("Cannot activate a subscription before its start date.");
         }
 
         Status = SubscriptionStatus.Active;
@@ -39,14 +49,23 @@ public class Subscription(SubscriptionPlan subscriptionPlan, DateOnly? startDate
 
     public void ExpireSubscription()
     {
+        if (Status != SubscriptionStatus.Active)
+        {
+            throw new SubscriptionException("Only active subscriptions can be expired.", SubscriptionPlan.Name);
+        }
+
         Status = SubscriptionStatus.Expired;
     }
 
-    public void AddSubscriptionPlan(SubscriptionPlan subscriptionPlan)
+    public void FailSubscription()
     {
-        if (null != SubscriptionPlan)
-            throw new InvalidOperationException("Subscription plan already set and cannot be changed.");
+        if (Status != SubscriptionStatus.WaitingActivation)
+        {
+            throw new SubscriptionException("Only subscriptions in 'WaitingActivation' status can be marked as failed.", SubscriptionPlan.Name);
+        }
 
-        SubscriptionPlan = subscriptionPlan;
+        Status = SubscriptionStatus.Failed;
     }
+
+    public DateOnly GetEndDate() => StartDate.AddMonths(SubscriptionPlan.DurationInMonths);
 }
