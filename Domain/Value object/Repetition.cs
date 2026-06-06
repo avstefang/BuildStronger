@@ -25,6 +25,13 @@ public sealed class Repetition
             throw new DomainException("Repetition end date must be in the future.");
         }
 
+        if (!repetitionCount.HasValue && !repetitionEndDate.HasValue)
+        {
+            RepetitionCount = 1;
+            RepetitionEndDate = null;
+            return;
+        }
+
         RepetitionCount = repetitionCount;
         RepetitionEndDate = repetitionEndDate;
     }

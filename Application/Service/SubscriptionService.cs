@@ -6,17 +6,54 @@ using System.Text;
 
 namespace Application.Service;
 
-public class ChangeSubscriptionService(
+public class SubscriptionService(
     ISubscriptionPlanRepository subscriptionPlanRepository,
+    ISubscriptionRepository subscriptionRepository,
     IAthleteRepository athleteRepository,
     IPaymentRepository paymentRepository,
     IPaymentProcessor paymentProcessor
 )
 {
     private readonly ISubscriptionPlanRepository _subscriptionPlanRepository = subscriptionPlanRepository;
+    private readonly ISubscriptionRepository _subscriptionRepository = subscriptionRepository;
     private readonly IAthleteRepository _athleteRepository = athleteRepository;
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IPaymentProcessor _paymentProcessor = paymentProcessor;
+
+    public Athlete RegisterSubscription(Athlete athlete, string subscriptionName, DateOnly? startDate, bool autoRenew = false)
+    {
+        SubscriptionPlan subscriptionPlan = _subscriptionPlanRepository.RetrieveSubscriptionPlanByNameAsync(subscriptionName).Result;
+        Subscription subscription = new(subscriptionPlan, startDate);
+        Payment payment = new(subscription);
+
+        Guid paymentId = _paymentProcessor.ProcessPaymentAsync(payment).Result;
+        if (paymentId != Guid.Empty)
+        {
+            payment.SetProcessorId(paymentId);
+            payment.IsSuccessful();
+
+            if (autoRenew)
+            {
+                subscription.EnableAutoRenewal();
+            }
+
+            if (startDate == DateOnly.FromDateTime(DateTime.UtcNow))
+            {
+                payment.Subscription.ActivateSubscription();
+            }
+        }
+        else
+        {
+            payment.IsFailed();
+            payment.Subscription.FailSubscription();
+        }
+
+        _paymentRepository.CreatePaymentAsync(payment);
+
+        athlete.AddSubscription(subscription);
+        _athleteRepository.AddSubscriptionAsync(athlete, subscription);
+        return athlete;
+    }
 
     public Athlete ChangeSubscription(Athlete athlete, string newSubscriptionName, DateOnly? startDate, bool autoRenew = false)
     {
@@ -63,5 +100,23 @@ public class ChangeSubscriptionService(
         athlete.AddSubscription(subscription);
         _athleteRepository.AddSubscriptionAsync(athlete, subscription);
         return athlete;
+    }
+
+    public void CancelSubscription(Athlete athlete)
+    {
+        var subscription = athlete.GetLastSubscription();
+        subscription?.CancelSubscription();
+    }
+
+    public bool ActivateLatentSubscription(Subscription subscription)
+    {
+        if (subscription.StartDate < DateOnly.FromDateTime(DateTime.UtcNow))
+        {
+            return false;
+        }
+
+        subscription.ActivateSubscription();
+        _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
+        return true;
     }
 }

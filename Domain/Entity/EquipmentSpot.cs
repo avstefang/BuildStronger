@@ -15,10 +15,7 @@ public class EquipmentSpot
 
     public EquipmentSpot(Lesson lesson, Equipment equipment, EquipmentRoom equipmentRoom, EquipmentPosition equipmentPosition, Reservation reservation)
     {
-        if (lesson?.Equipment?.Contains(equipment) == false)
-            throw new DomainException("The equipment is not available for this lesson.");
-
-        Lesson = lesson ?? throw new DomainException("The lesson cannot be null.");
+        Lesson = lesson;
         Equipment = equipment;
         EquipmentRoom = equipmentRoom;
         EquipmentPosition = equipmentPosition;

@@ -11,7 +11,7 @@ public class ReadPaymentDto
     public Guid Id { get; set; }
     public decimal Amount { get; set; }
     public PaymentStatus Status { get; private set; }
-    public PaymentMethod Method { get; set; } = PaymentMethod.IDEAL;
+    public PaymentMethod Method { get; set; } = PaymentMethod.Wero;
     public required Subscription Subscription { get; set; }
     public Currency Currency { get; set; } = Currency.EUR;
     
@@ -38,14 +38,4 @@ public class ReadPaymentDto
     {
         Status = PaymentStatus.Pending;
     }
-
-    public static ReadPaymentDTO Convert(Payment payment) => new ReadPaymentDTO
-    {
-        Id = payment.Id,
-        Amount = payment.Amount,
-        Status = payment.Status,
-        Method = payment.Method,
-        Subscription = payment.Subscription,
-        Currency = payment.Currency
-    };
 }

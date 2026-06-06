@@ -293,3 +293,5 @@ Ontwikkelaar, Klant, Eigenaar, Medewerker
 - General repositories: https://www.ben-morris.com/why-the-generic-repository-is-just-a-lazy-anti-pattern/
 - View: https://marcoatschaefer.medium.com/onion-architecture-explained-building-maintainable-software-54996ff8e464#0b6e
 - Use case: https://www.figma.com/nl-nl/resource-library/wat-is-een-use-case/
+- Database: https://medium.com/@mcansener/seamless-database-integration-with-c-a-practical-guide-80ec8321f6f2
+- JWT: https://medium.com/@sajadshafi/jwt-authentication-in-c-net-core-7-web-api-b825b3aee11d

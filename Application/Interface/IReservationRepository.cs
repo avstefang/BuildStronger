@@ -9,6 +9,7 @@ public interface IReservationRepository : IRepository<Reservation>
 {
     Task<Reservation> RetrieveReservationByNameAsync(string reservationName);
     Task<IEnumerable<Reservation>> RetrieveAllReservationsByLessonAsync(Lesson lesson);
+    Task<IEnumerable<Reservation>> RetrieveAllReservationsByAthleteAsync(Athlete athlete);
     Task<IEnumerable<Reservation>> RetrieveAllReservationsAsync();
     Task AddReservationAsync(Reservation reservation);
     Task UpdateReservationAsync(Reservation reservation);

@@ -2,19 +2,18 @@ using System;
 
 namespace Domain.Entity;
 
-public class Lesson(Workout workout, int maxCapacity, Room room, List<Equipment>? equipment, int customDuration = 0)
+public class Lesson(Workout workout, Schedule schedule, int maxCapacity, int customDuration = 0)
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public Workout Workout { get; private set; } = workout;
+    public Schedule Schedule { get; private set; } = schedule;
     public int CustomDuration { get; private set; } = customDuration;
     public int MaxCapacity { get; private set; } = maxCapacity;
     public Instructor? Instructor { get; private set; }
-    public Room Room { get; set; } = room;
-    public List<Equipment>? Equipment { get; set; } = equipment;
 
     public void AssignInstructor(Instructor instructor)
     {
-        Instructor = instructor ?? throw new ArgumentNullException(nameof(instructor), "Instructor cannot be null.");
+        Instructor = instructor;
     }
 
     public void UpdateCustomDuration(int duration)
@@ -31,5 +30,16 @@ public class Lesson(Workout workout, int maxCapacity, Room room, List<Equipment>
             throw new ArgumentOutOfRangeException(nameof(capacity), "Max capacity cannot be negative.");
 
         MaxCapacity = capacity;
+    }
+
+    public void UpdateSchedule(Schedule schedule)
+    {
+        Schedule = schedule;
+    }
+
+    public TimeOnly GetEndTime()
+    {
+        int totalDuration = CustomDuration > 0 ? CustomDuration : Workout.Duration.Minutes;
+        return Schedule.StartTime.Add(TimeSpan.FromMinutes(totalDuration));
     }
 }
