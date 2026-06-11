@@ -5,11 +5,12 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IEquipmentRoomRepository : IRepository<EquipmentRoom>
+public interface IEquipmentRoomRepository : IRepository<EquipmentRoom, Guid>
 {
-    Task<EquipmentRoom> GetEquipmentRoomAsync(EquipmentRoom entity);
+    Task<EquipmentRoom> GetEquipmentRoomByIdAsync(Guid id);
+    Task<EquipmentRoom> GetEquipmentRoomByNameAsync(string roomName);
     Task<IEnumerable<EquipmentRoom>> GetAllEquipmentRoomsAsync();
-    Task AddEquipmentRoomAsync(EquipmentRoom entity);
-    Task UpdateEquipmentRoomAsync(EquipmentRoom entity);
-    Task DeleteEquipmentRoomAsync(EquipmentRoom entity);
+    Task AddEquipmentRoomAsync(EquipmentRoom equipmentRoom);
+    Task UpdateEquipmentRoomAsync(EquipmentRoom equipmentRoom);
+    Task DeleteEquipmentRoomAsync(Guid equipmentRoomId);
 }

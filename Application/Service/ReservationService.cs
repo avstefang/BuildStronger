@@ -15,11 +15,13 @@ public class ReservationService(ILessonRepository lessonRepository, IReservation
 
     public async Task<ReservationStatus> ReserveLessonAsync(Athlete athlete, string workoutName, DateTime reservationDate)
     {
-        Lesson lesson = await _lessonRepository.RetrieveLessonByWorkoutNameAsync(workoutName);
-        IEnumerable<Reservation> reservations = await _reservationRepository.RetrieveAllReservationsByLessonAsync(lesson);
+        IEnumerable<Lesson> lessons = await _lessonRepository.GetLessonByWorkoutNameAsync(workoutName);
+        Lesson? lesson = lessons.FirstOrDefault(l => l.Schedule.StartDateTime() == reservationDate);
 
         if (lesson != null)
         {
+            IEnumerable<Reservation> reservations = await _reservationRepository.GetAllReservationsByLessonIdAsync(lesson.Id);
+
             Reservation reservation = new(athlete, reservationDate, lesson);
 
             if (reservations.Count() < lesson.MaxCapacity)
@@ -35,10 +37,11 @@ public class ReservationService(ILessonRepository lessonRepository, IReservation
 
     public async Task<bool> CancelReservationAsync(Athlete athlete, string workoutName, DateTime reservationDate)
     {
-        Lesson lesson = await _lessonRepository.RetrieveLessonByWorkoutNameAsync(workoutName);
-        IEnumerable<Reservation> reservations = await _reservationRepository.RetrieveAllReservationsByLessonAsync(lesson);
+        IEnumerable<Lesson> lessons = await _lessonRepository.GetLessonByWorkoutNameAsync(workoutName);
+        Lesson? lesson = lessons.FirstOrDefault(l => l.Schedule.StartDateTime() == reservationDate);
         if (lesson != null)
         {
+            IEnumerable<Reservation> reservations = await _reservationRepository.GetAllReservationsByLessonIdAsync(lesson.Id);
             Reservation? reservation = reservations.FirstOrDefault(r => r.Athlete.Id == athlete.Id && r.ReservationDate == reservationDate);
             if (reservation != null)
             {
@@ -50,30 +53,30 @@ public class ReservationService(ILessonRepository lessonRepository, IReservation
         throw new ReservationException($"No lesson found with the name {workoutName}");
     }
 
-    public async Task<IEnumerable<Reservation>> GetLessonReservationsAsync(string workoutName)
+    public async Task<IEnumerable<Reservation>> GetLessonReservationsAsync(Guid lessonId)
     {
-        Lesson lesson = await _lessonRepository.RetrieveLessonByWorkoutNameAsync(workoutName);
-        if (lesson != null)
+        IEnumerable<Reservation> reservations = await _reservationRepository.GetAllReservationsByLessonIdAsync(lessonId);
+        if (reservations != null)
         {
-            return await _reservationRepository.RetrieveAllReservationsByLessonAsync(lesson);
+            return reservations;
         }
-        throw new ReservationException($"No lesson found with the name {workoutName}");
+        throw new ReservationException($"No reservations found for lesson {lessonId}");
     }
 
     public async Task<IEnumerable<Reservation>> GetAthleteReservationsAsync(Athlete athlete)
     {
-        return await _reservationRepository.RetrieveAllReservationsByAthleteAsync(athlete);
+        return await _reservationRepository.GetAllReservationsByAthleteAsync(athlete);
     }
 
-    public async Task<List<Reservation>?> GetWaitlistReservationsAsync(Lesson lesson)
+    public async Task<List<Reservation>?> GetWaitlistReservationsAsync(Guid lessonId)
     {
-        IEnumerable<Reservation> reservations = await _reservationRepository.RetrieveAllReservationsByLessonAsync(lesson);
+        IEnumerable<Reservation> reservations = await _reservationRepository.GetAllReservationsByLessonIdAsync(lessonId);
         return reservations.Where(r => r.Status == ReservationStatus.Waitinglist).ToList();
     }
 
     public async Task<Reservation?> GetAthleteWaitlistReservationsAsync(Athlete athlete, Lesson lesson)
     {
-        IEnumerable<Reservation> reservations = await _reservationRepository.RetrieveAllReservationsByAthleteAsync(athlete);
+        IEnumerable<Reservation> reservations = await _reservationRepository.GetAllReservationsByAthleteAsync(athlete);
         return reservations.FirstOrDefault(r => r.Status == ReservationStatus.Waitinglist && r.Lesson.Id == lesson.Id);
     }
 }

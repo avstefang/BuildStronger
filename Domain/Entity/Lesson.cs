@@ -9,7 +9,8 @@ public class Lesson(Workout workout, Schedule schedule, int maxCapacity, int cus
     public Schedule Schedule { get; private set; } = schedule;
     public int CustomDuration { get; private set; } = customDuration;
     public int MaxCapacity { get; private set; } = maxCapacity;
-    public Instructor? Instructor { get; private set; }
+    public Instructor? Instructor { get; private set; } = null;
+    public Equipment? Equipment { get; private set; } = null;
 
     public void AssignInstructor(Instructor instructor)
     {
@@ -41,5 +42,10 @@ public class Lesson(Workout workout, Schedule schedule, int maxCapacity, int cus
     {
         int totalDuration = CustomDuration > 0 ? CustomDuration : Workout.Duration.Minutes;
         return Schedule.StartTime.Add(TimeSpan.FromMinutes(totalDuration));
+    }
+
+    public void AssignEquipment(Equipment equipment)
+    {
+        Equipment = equipment;
     }
 }

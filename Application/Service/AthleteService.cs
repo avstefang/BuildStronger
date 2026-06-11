@@ -16,10 +16,11 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
     private readonly IPasswordCrypt _passwordCrypt = passwordCrypt;
     private readonly IEmailSender? _emailSender = emailSender;
 
-    public async Task RegisterAthleteAsync(Athlete athlete)
+    public async Task RegisterAthleteAsync(RegisterAthleteDto athleteDto)
     {
         // Hash the password before saving
-        athlete.SetPassword(_passwordCrypt.HashPassword(athlete.Password));
+        string passwordHash = _passwordCrypt.HashPassword(athleteDto.Password);
+        Athlete athlete = new(athleteDto.Email, athleteDto.FullName, passwordHash);
 
         // Save the athlete to the repository
         await _athleteRepository.AddAthleteAsync(athlete);
@@ -54,11 +55,6 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
 
     public async Task UpdateAthlete(UpdateAthleteDto updateAthleteDto)
     {
-        Athlete athlete = await _athleteRepository.GetAthleteByEmailAsync(updateAthleteDto.EmailAddress);
-        athlete.ChangeEmailAddress(updateAthleteDto.EmailAddress);
-        athlete.ChangeFullName(updateAthleteDto.FullName);
-        athlete.SetUsername(updateAthleteDto.Username);
-
-        await _athleteRepository.UpdateAthleteAsync(athlete);
+        await _athleteRepository.UpdateAthleteAsync(updateAthleteDto);
     }
 }

@@ -1,12 +1,12 @@
 # SQL database
 * athlete
     - id: GUID, NOT NULL, PK
-    - emailAddress: NOT NULL, PK
+    - emailAddress: NOT NULL, Unique
     - firstName: NOT NULL
     - lastName: NOT NULL
     - password: NOT NULL
     - role: ENUM[(default)User, Administrator, Employee, Instructor, NNB_Instructor], DEFAULT FALSE
-    - username: empty
+    - username: empty, Unique
     - photoPath: empty
 * lesson
     - id: GUID, NOT NULL, Increment, Unique, PK
@@ -65,7 +65,7 @@
     - currency: NOT NULL, ENUM default eur
 * equipment
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
 * equipmentRoom
     - id: GUID, NOT NULL, Increment, Unique, PK
     - roomId: GUID, NOT NULL, FK
@@ -88,11 +88,11 @@
     - Unique(lessonId, reservationId)
 * location
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
     - address: NOT NULL
 * room
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
     - capacity: INT, NOT NULL
     - locationId: GUID, NOT NULL, FK
 

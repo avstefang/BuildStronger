@@ -3,18 +3,32 @@ using Domain.Value_object;
 
 namespace Domain.Entity;
 
-public class Athlete(EmailAddress emailAddress, FullName fullName, string password)
+public class Athlete
 {
     private readonly List<Subscription> _subscriptions = [];
 
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public required EmailAddress EmailAddress { get; set; } = emailAddress;
-    public required FullName FullName { get; set; } = fullName;
-    public string Password { get; private set; } = password;
+    public EmailAddress EmailAddress { get; private set; }
+    public FullName FullName { get; private set; }
+    public string Password { get; private set; }
     public Role Role { get; private set; } = Role.User;
     public string Username { get; private set; } = string.Empty;
     public PhotoPath? PhotoPath { get; set; } = null;
     public IReadOnlyList<Subscription> Subscriptions => _subscriptions;
+
+    protected Athlete()
+    {
+        EmailAddress = null!;
+        FullName = null!;
+        Password = null!;
+    }
+
+    public Athlete(EmailAddress emailAddress, FullName fullName, string password)
+    {
+        EmailAddress = emailAddress;
+        FullName = fullName;
+        Password = password;
+    }
 
     // Promote the Athlete to an Instructor role
     public void PromoteToInstructor()

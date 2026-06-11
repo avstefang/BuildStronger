@@ -20,13 +20,9 @@ public abstract class Repository<T, Id> : IRepository<T, Id> where T : class
         await DbContext.Set<T>().AddAsync(entity);
     }
 
-    public async Task DeleteAsync(T entity)
+    public async Task DeleteAsync(Id id)
     {
-        if (!EntityExists(entity))
-        {
-            throw new Exception("Entity not found");
-        }
-
+        T entity = await DbContext.Set<T>().FindAsync(id) ?? throw new Exception("Entity not found");
         DbContext.Set<T>().Remove(entity);
         await DbContext.SaveChangesAsync();
     }

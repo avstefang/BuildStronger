@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Application.Dto;
 using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IReservationRepository : IRepository<Reservation>
+public interface IReservationRepository : IRepository<Reservation, Guid>
 {
-    Task<Reservation> RetrieveReservationByNameAsync(string reservationName);
-    Task<IEnumerable<Reservation>> RetrieveAllReservationsByLessonAsync(Lesson lesson);
-    Task<IEnumerable<Reservation>> RetrieveAllReservationsByAthleteAsync(Athlete athlete);
-    Task<IEnumerable<Reservation>> RetrieveAllReservationsAsync();
+    Task<Reservation> GetReservationByNameAsync(string workoutName);
+    Task<IEnumerable<Reservation>> GetAllReservationsByLessonIdAsync(Guid lessonId);
+    Task<IEnumerable<Reservation>> GetAllReservationsByAthleteAsync(Athlete athlete);
+    Task<IEnumerable<Reservation>> GetAllReservationsAsync();
     Task AddReservationAsync(Reservation reservation);
-    Task UpdateReservationAsync(Reservation reservation);
-    Task DeleteReservationAsync(Reservation reservation);
+    Task UpdateReservationAsync(UpdateReservationDto reservationDto);
+    Task DeleteReservationAsync(Guid id);
 }

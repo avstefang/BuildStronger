@@ -20,13 +20,13 @@ public class SubscriptionService(
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IPaymentProcessor _paymentProcessor = paymentProcessor;
 
-    public Athlete RegisterSubscription(Athlete athlete, string subscriptionName, DateOnly? startDate, bool autoRenew = false)
+    public async Task<Athlete> RegisterSubscriptionAsync(Athlete athlete, string subscriptionName, DateOnly? startDate, bool autoRenew = false)
     {
-        SubscriptionPlan subscriptionPlan = _subscriptionPlanRepository.RetrieveSubscriptionPlanByNameAsync(subscriptionName).Result;
+        SubscriptionPlan subscriptionPlan = await _subscriptionPlanRepository.GetSubscriptionPlanByNameAsync(subscriptionName);
         Subscription subscription = new(subscriptionPlan, startDate);
         Payment payment = new(subscription);
 
-        Guid paymentId = _paymentProcessor.ProcessPaymentAsync(payment).Result;
+        Guid paymentId = await _paymentProcessor.ProcessPaymentAsync(payment);
         if (paymentId != Guid.Empty)
         {
             payment.SetProcessorId(paymentId);
@@ -39,23 +39,24 @@ public class SubscriptionService(
 
             if (startDate == DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                payment.Subscription.ActivateSubscription();
+                subscription.ActivateSubscription();
             }
         }
         else
         {
             payment.IsFailed();
-            payment.Subscription.FailSubscription();
+            subscription.FailSubscription();
         }
 
-        _paymentRepository.CreatePaymentAsync(payment);
+        await _paymentRepository.CreatePaymentAsync(payment);
 
         athlete.AddSubscription(subscription);
-        _athleteRepository.AddSubscriptionAsync(athlete, subscription);
+        await _subscriptionRepository.AddSubscriptionAsync(subscription);
+        await _athleteRepository.UpdateAsync(athlete);
         return athlete;
     }
 
-    public Athlete ChangeSubscription(Athlete athlete, string newSubscriptionName, DateOnly? startDate, bool autoRenew = false)
+    public async Task<Athlete> ChangeSubscriptionAsync(Athlete athlete, string newSubscriptionName, DateOnly? startDate, bool autoRenew = false)
     {
         Subscription? lastSubscription = athlete.GetLastSubscription();
         if (newSubscriptionName == lastSubscription?.SubscriptionPlan.Name)
@@ -69,11 +70,11 @@ public class SubscriptionService(
             startDate = endDateLastSubscription.Value.AddDays(1);
         }
 
-        SubscriptionPlan subscriptionPlan = _subscriptionPlanRepository.RetrieveSubscriptionPlanByNameAsync(newSubscriptionName).Result;
+        SubscriptionPlan subscriptionPlan = await _subscriptionPlanRepository.GetSubscriptionPlanByNameAsync(newSubscriptionName);
         Subscription subscription = new(subscriptionPlan, startDate);
         Payment payment = new(subscription);
 
-        Guid paymentId = _paymentProcessor.ProcessPaymentAsync(payment).Result;
+        Guid paymentId = await _paymentProcessor.ProcessPaymentAsync(payment);
         if (paymentId != Guid.Empty)
         {
             payment.SetProcessorId(paymentId);
@@ -86,29 +87,35 @@ public class SubscriptionService(
 
             if (startDate == DateOnly.FromDateTime(DateTime.UtcNow))
             {
-                payment.Subscription.ActivateSubscription();
+                subscription.ActivateSubscription();
             }
         }
         else
         {
             payment.IsFailed();
-            payment.Subscription.FailSubscription();
+            subscription.FailSubscription();
         }
 
-        _paymentRepository.CreatePaymentAsync(payment);
+        await _paymentRepository.CreatePaymentAsync(payment);
 
         athlete.AddSubscription(subscription);
-        _athleteRepository.AddSubscriptionAsync(athlete, subscription);
+        await _subscriptionRepository.AddSubscriptionAsync(subscription);
+        await _athleteRepository.UpdateAsync(athlete);
         return athlete;
     }
 
-    public void CancelSubscription(Athlete athlete)
+    public async Task CancelSubscriptionAsync(Athlete athlete)
     {
         var subscription = athlete.GetLastSubscription();
-        subscription?.CancelSubscription();
+        if (subscription != null)
+        {
+            subscription.CancelSubscription();
+            await _subscriptionRepository.UpdateAsync(subscription);
+            await _athleteRepository.UpdateAsync(athlete);
+        }
     }
 
-    public bool ActivateLatentSubscription(Subscription subscription)
+    public async Task<bool> ActivateLatentSubscriptionAsync(Subscription subscription)
     {
         if (subscription.StartDate < DateOnly.FromDateTime(DateTime.UtcNow))
         {
@@ -116,7 +123,7 @@ public class SubscriptionService(
         }
 
         subscription.ActivateSubscription();
-        _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
+        await _subscriptionRepository.UpdateAsync(subscription);
         return true;
     }
 }

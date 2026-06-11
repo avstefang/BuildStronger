@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Application.Dto;
 using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface ILessonRepository : IRepository<Lesson>
+public interface ILessonRepository : IRepository<Lesson, Guid>
 {
-    Task<Lesson> RetrieveLessonByIdAsync(Guid lessonId);
-    Task<Lesson> RetrieveLessonByWorkoutNameAsync(string workoutName);
-    Task<IEnumerable<Lesson>> RetrieveAllLessonsAsync();
+    Task<Lesson> GetLessonByIdAsync(Guid lessonId);
+    Task<IEnumerable<Lesson>> GetLessonByWorkoutNameAsync(string workoutName);
+    Task<IEnumerable<Lesson>> GetAllLessonsAsync();
     Task AddLessonAsync(Lesson lesson);
-    Task UpdateLessonAsync(Lesson lesson);
-    Task DeleteLessonAsync(Lesson lesson);
+    Task UpdateLessonAsync(UpdateLessonDto lessonDto);
+    Task DeleteLessonAsync(Guid lessonId);
 }

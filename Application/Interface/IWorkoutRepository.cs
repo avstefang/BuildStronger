@@ -5,11 +5,11 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IWorkoutRepository : IRepository<Workout>
+public interface IWorkoutRepository : IRepository<Workout, Guid>
 {
-    Task<Workout> GetWorkoutAsync(Workout workout);
+    Task<Workout> GetWorkoutByNameAsync(string workoutName);
     Task<IEnumerable<Workout>> GetAllWorkoutsAsync();
     Task AddWorkoutAsync(Workout workout);
     Task UpdateWorkoutAsync(Workout workout);
-    Task DeleteWorkoutAsync(Workout workout);
+    Task DeleteWorkoutAsync(Guid workoutId);
 }

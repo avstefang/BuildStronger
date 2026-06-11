@@ -4,13 +4,25 @@ using System;
 
 namespace Domain.Entity;
 
-public class Subscription(SubscriptionPlan subscriptionPlan, DateOnly? startDate)
+public class Subscription
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public SubscriptionPlan SubscriptionPlan { get; private set; } = subscriptionPlan ?? throw new ArgumentNullException(nameof(subscriptionPlan));
-    public DateOnly StartDate { get; private set; } = startDate ?? DateOnly.FromDateTime(DateTime.Now);
+    public SubscriptionPlan SubscriptionPlan { get; private set; }
+    public DateOnly StartDate { get; private set; }
     public bool AutoRenew { get; private set; } = false;
     public SubscriptionStatus Status { get; private set; } = SubscriptionStatus.WaitingActivation;
+
+    protected Subscription()
+    {
+        SubscriptionPlan = null!;
+        StartDate = DateOnly.FromDateTime(DateTime.Now);
+    }
+
+    public Subscription(SubscriptionPlan subscriptionPlan, DateOnly? startDate)
+    {
+        SubscriptionPlan = subscriptionPlan;
+        StartDate = startDate ?? DateOnly.FromDateTime(DateTime.Now);
+    }
 
     public void EnableAutoRenewal()
     {
@@ -39,7 +51,7 @@ public class Subscription(SubscriptionPlan subscriptionPlan, DateOnly? startDate
             throw new InvalidOperationException("Cannot reactivate an expired, failed, or cancelled subscription.");
         }
 
-        if (startDate >= DateOnly.FromDateTime(DateTime.Now))
+        if (StartDate >= DateOnly.FromDateTime(DateTime.Now))
         {
             throw new InvalidOperationException("Cannot activate a subscription before its start date.");
         }
