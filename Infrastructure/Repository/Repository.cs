@@ -18,6 +18,7 @@ public abstract class Repository<T, Id> : IRepository<T, Id> where T : class
     public async Task AddAsync(T entity)
     {
         await DbContext.Set<T>().AddAsync(entity);
+        await DbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Id id)
@@ -39,7 +40,12 @@ public abstract class Repository<T, Id> : IRepository<T, Id> where T : class
 
     private bool EntityExists(T entity)
     {
-        return DbContext.Set<T>().Find(entity) != null;
+        var key = DbContext.Model.FindEntityType(typeof(T))!
+            .FindPrimaryKey()!
+            .Properties
+            .Select(p => p.PropertyInfo!.GetValue(entity))
+            .ToArray();
+        return DbContext.Set<T>().Find(key) != null;
     }
 
     public async Task UpdateAsync(T entity)

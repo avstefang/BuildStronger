@@ -8,12 +8,19 @@ function Test-Register {
 
         [string]$Password = "P@ssw0rd"
     )
+
+    [string]$body = @{
+        FirstName = $FirstName
+        LastName  = $LastName
+        Email     = $Email
+        Password  = $Password
+    } | ConvertTo-Json
     
     $headers=@{}
     $headers.Add("Content-Type", "application/json")
     $response = Invoke-RestMethod -Uri 'https://localhost:7167/api/Auth/register' `
     -Method POST -Headers $headers -ContentType 'application/json' `
-    -Body "{'email':{'address':'$Email'},'fullName':{'firstName':'$FirstName','lastName':'$LastName'},'password':'$Password'}"
+    -Body $body
 
     return $response
 }

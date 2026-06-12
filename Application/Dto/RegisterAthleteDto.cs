@@ -1,10 +1,9 @@
-using Domain.Value_object;
-
 namespace Application.Dto;
 
-public class RegisterAthleteDto(EmailAddress email, FullName fullName, string password)
+public class RegisterAthleteDto
 {
-    public EmailAddress Email { get; private set; } = email;
-    public FullName FullName { get; private set; } = fullName;
-    public string Password { get; private set; } = password;
+    public string Email { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
 }

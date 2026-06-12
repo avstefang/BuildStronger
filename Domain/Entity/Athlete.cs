@@ -28,6 +28,8 @@ public class Athlete
         EmailAddress = emailAddress;
         FullName = fullName;
         Password = password;
+
+        Username = EmailAddress.Address.Split("@")[0];
     }
 
     // Promote the Athlete to an Instructor role

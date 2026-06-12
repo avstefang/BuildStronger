@@ -4,9 +4,11 @@ using System.Text;
 using Application.Dto;
 using Application.Interface;
 using Domain.Entity;
+using Domain.Exception;
 using Domain.Value_object;
 using Infrastructure;
 using Infrastructure.Context_model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repository;
 
@@ -26,12 +28,14 @@ public class AthleteRepository(AthleteDbContext dbConnection) : Repository<Athle
 
     public async Task<IEnumerable<Athlete>> GetAllAthletesAsync()
     {
-        throw new NotImplementedException();
+        return GetAllAsync().Result;
     }
 
     public async Task<Athlete> GetAthleteByEmailAsync(EmailAddress email)
     {
-        throw new NotImplementedException();
+        return await DbContext.Set<Athlete>()
+            .FirstOrDefaultAsync(a => a.EmailAddress.Address == email.Address)
+            ?? throw new AthleteNotFoundException($"Athlete with email '{email.Address}' not found.");
     }
 
     public async Task<Athlete> GetAthleteById(Guid id)

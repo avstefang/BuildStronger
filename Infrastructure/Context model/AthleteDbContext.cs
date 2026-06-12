@@ -8,7 +8,7 @@ namespace Infrastructure.Context_model;
 
 public class AthleteDbContext(DbContextOptions<AthleteDbContext> options) : DbContext(options)
 {
-    public DbSet<Athlete> Athletes { get; set; }
+    public DbSet<Athlete> Athlete { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -16,18 +16,20 @@ public class AthleteDbContext(DbContextOptions<AthleteDbContext> options) : DbCo
 
         modelBuilder.Entity<Athlete>(builder =>
         {
+            builder.ToTable("athlete");
             builder.OwnsOne(a => a.EmailAddress, e =>
             {
-                e.Property(ea => ea.Address).HasColumnName("EmailAddress");
+                e.Property(ea => ea.Address).HasColumnName("emailAddress");
             });
             builder.OwnsOne(a => a.FullName, fn =>
             {
-                fn.Property(f => f.FirstName).HasColumnName("FirstName");
-                fn.Property(f => f.LastName).HasColumnName("LastName");
+                fn.Property(f => f.FirstName).HasColumnName("firstName");
+                fn.Property(f => f.LastName).HasColumnName("lastName");
             });
+            builder.Property(a => a.Role).HasColumnName("role").HasConversion<string>();
             builder.OwnsOne(a => a.PhotoPath, pp =>
             {
-                pp.Property(p => p.Path).HasColumnName("PhotoPath");
+                pp.Property(p => p.Path).HasColumnName("photoPath");
             });
         });
     }

@@ -25,11 +25,11 @@ public class AuthController(AthleteService athleteService, ITokenService tokenSe
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterAthleteDto athleteDto)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         try
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             await _athleteService.RegisterAthleteAsync(athleteDto);
 
             return Ok(new { message = "Athlete registered successfully", emailAddress = athleteDto.Email });
@@ -40,7 +40,7 @@ public class AuthController(AthleteService athleteService, ITokenService tokenSe
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Registration failed", details = ex.Message });
+            return StatusCode(500, new { error = "Registration failed", details = ex.InnerException?.Message ?? ex.Message });
         }
     }
 
@@ -83,7 +83,7 @@ public class AuthController(AthleteService athleteService, ITokenService tokenSe
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Login failed", details = ex.Message });
+            return StatusCode(500, new { error = "Login failed", details = ex.InnerException?.Message ?? ex.Message });
         }
     }
 

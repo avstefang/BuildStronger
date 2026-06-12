@@ -2,6 +2,7 @@
 using Application.Interface;
 using Application.Template;
 using Domain.Entity;
+using Domain.Exception;
 using Domain.Value_object;
 using System;
 using System.Collections.Generic;
@@ -18,9 +19,10 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
 
     public async Task RegisterAthleteAsync(RegisterAthleteDto athleteDto)
     {
-        // Hash the password before saving
         string passwordHash = _passwordCrypt.HashPassword(athleteDto.Password);
-        Athlete athlete = new(athleteDto.Email, athleteDto.FullName, passwordHash);
+        var email = new EmailAddress(athleteDto.Email);
+        var fullName = new FullName(athleteDto.FirstName, athleteDto.LastName);
+        Athlete athlete = new(email, fullName, passwordHash);
 
         // Save the athlete to the repository
         await _athleteRepository.AddAthleteAsync(athlete);
@@ -35,22 +37,19 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
 
     public async Task<Athlete?> LoginAthleteAsync(EmailAddress email, SecureString password)
     {
-        // Retrieve the athlete by email
-        var athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
-        if (athlete == null)
+        Athlete athlete;
+        try
+        {
+            athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
+        }
+        catch (AthleteNotFoundException)
         {
             return null;
         }
 
-        // Verify the password
         string passwordString = _passwordCrypt.SecureToPlain(password);
         bool verifyPassword = _passwordCrypt.VerifyPassword(passwordString, athlete.Password);
-        if (verifyPassword)
-        {
-            return athlete;
-        }
-
-        return null;
+        return verifyPassword ? athlete : null;
     }
 
     public async Task UpdateAthlete(UpdateAthleteDto updateAthleteDto)

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Security;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace Infrastructure.Auth;
 
@@ -15,7 +16,19 @@ public class PasswordCrypt : IPasswordCrypt
 
     public string SecureToPlain(SecureString secureString)
     {
-        throw new NotImplementedException();
+        if (secureString == null)
+            throw new ArgumentNullException(nameof(secureString));
+
+        IntPtr unmanagedString = IntPtr.Zero;
+        try
+        {
+            unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(secureString);
+            return Marshal.PtrToStringUni(unmanagedString) ?? string.Empty;
+        }
+        finally
+        {
+            Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
+        }
     }
 
     public bool VerifyPassword(string password, string hash)
