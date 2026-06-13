@@ -1,0 +1,34 @@
+@inherits LayoutComponentBase
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+        <MudText Typo="Typo.h6" Class="ml-3">BuildStronger — Staff</MudText>
+        <MudSpacer />
+        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Public site</MudButton>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.subtitle1"><b>Staff Portal</b></MudText>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <MudNavLink Href="/staff/workouts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FitnessCenter">Workouts</MudNavLink>
+            <MudNavLink Href="/staff/instructors" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Instructors</MudNavLink>
+            <MudNavLink Href="/staff/schedule" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarMonth">Schedule</MudNavLink>
+            <MudNavLink Href="/staff/occupancy" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Occupancy</MudNavLink>
+            <MudNavLink Href="/staff/members" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Members</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="pt-16">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+}

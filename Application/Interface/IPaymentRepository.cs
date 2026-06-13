@@ -6,7 +6,7 @@ using Domain.Enum;
 
 namespace Application.Interface;
 
-public interface IPaymentRepository : IRepository<Payment, Guid>
+public interface IPaymentRepository
 {
     Task<Payment> GetPaymentByIdAsync(Guid paymentId);
     Task<PaymentStatus> CreatePaymentAsync(Payment payment);

@@ -2,15 +2,29 @@ using System;
 
 namespace Domain.Entity;
 
-public class Lesson(Workout workout, Schedule schedule, int maxCapacity, int customDuration = 0)
+public class Lesson
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public Workout Workout { get; private set; } = workout;
-    public Schedule Schedule { get; private set; } = schedule;
-    public int CustomDuration { get; private set; } = customDuration;
-    public int MaxCapacity { get; private set; } = maxCapacity;
+    public Workout Workout { get; private set; }
+    public Schedule Schedule { get; private set; }
+    public int CustomDuration { get; private set; }
+    public int MaxCapacity { get; private set; }
     public Instructor? Instructor { get; private set; } = null;
     public Equipment? Equipment { get; private set; } = null;
+    public Room Room { get; private set; } = null!;
+
+    public Lesson(Workout workout, Schedule schedule, int maxCapacity, Room room, int customDuration = 0)
+    {
+        Workout = workout;
+        Schedule = schedule;
+        MaxCapacity = maxCapacity;
+        CustomDuration = customDuration;
+
+        if (maxCapacity > room.Capacity)
+            throw new ArgumentException("Max capacity cannot exceed room capacity.");
+
+        Room = room;
+    }
 
     public void AssignInstructor(Instructor instructor)
     {

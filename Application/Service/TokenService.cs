@@ -25,13 +25,13 @@ public class TokenService(IConfiguration configuration) : ITokenService
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey ?? throw new ArgumentNullException("No JWT secret key configured")));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, athlete.Id.ToString()),
-            new Claim(ClaimTypes.Email, athlete.EmailAddress.Address),
-            new Claim(ClaimTypes.Name, athlete.FullName.ToString()),
-            new Claim(ClaimTypes.Role, athlete.Role.ToString())
-        };
+        List<Claim> claims = [
+            new(ClaimTypes.NameIdentifier, athlete.Id.ToString()),
+            new(ClaimTypes.Email, athlete.EmailAddress.Address),
+            new(ClaimTypes.Name, athlete.FullName.ToString()),
+            new(ClaimTypes.Role, athlete.Role.ToString()),
+            new(ClaimTypes.AuthorizationDecision, athlete.GetActiveSubscription() != null ? "true" : "false")
+        ];
 
         var token = new JwtSecurityToken(
             issuer: issuer,

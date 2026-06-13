@@ -5,7 +5,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IRoomRepository : IRepository<Room, Guid>
+public interface IRoomRepository
 {
     Task<Room> GetRoomByIdAsAsync(Guid roomId);
     Task<IEnumerable<Room>> GetAllRoomsAsync();

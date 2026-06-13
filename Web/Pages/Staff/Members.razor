@@ -1,0 +1,58 @@
+@page "/staff/members"
+@layout StaffLayout
+
+<PageTitle>Members — BuildStronger Staff</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Members</MudText>
+
+<MudTextField @bind-Value="_search" Placeholder="Search by name or email" Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" Class="mb-4" />
+
+<MudTable Items="FilteredMembers" Hover="true" Striped="true" Bordered="true">
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Username</MudTh>
+        <MudTh>Subscription</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Start date</MudTh>
+        <MudTh>End date</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@context.Email</MudTd>
+        <MudTd>@context.Username</MudTd>
+        <MudTd>@context.Plan</MudTd>
+        <MudTd>
+            <MudChip T="string" Color="@StatusColor(context.Status)" Size="Size.Small">@context.Status</MudChip>
+        </MudTd>
+        <MudTd>@context.StartDate.ToShortDateString()</MudTd>
+        <MudTd>@context.EndDate.ToShortDateString()</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private record MemberItem(string Name, string Email, string Username, string Plan, string Status, DateTime StartDate, DateTime EndDate);
+
+    private string _search = string.Empty;
+
+    private List<MemberItem> _members =
+    [
+        new("Anna de Vries", "anna@example.com", "anna_dv", "Unlimited — monthly", "Active", DateTime.Today.AddMonths(-3), DateTime.Today.AddMonths(1)),
+        new("Tom Bakker", "tom@example.com", "tombakker", "2x per week — yearly", "Active", DateTime.Today.AddMonths(-6), DateTime.Today.AddMonths(6)),
+        new("Sophie Mulder", "sophie@example.com", "sophiem", "Unlimited — yearly", "Expired", DateTime.Today.AddYears(-1), DateTime.Today.AddDays(-5)),
+    ];
+
+    private IEnumerable<MemberItem> FilteredMembers => _members.Where(m =>
+        string.IsNullOrWhiteSpace(_search) ||
+        m.Name.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+        m.Email.Contains(_search, StringComparison.OrdinalIgnoreCase));
+
+    private Color StatusColor(string status) => status switch
+    {
+        "Active" => Color.Success,
+        "Expired" => Color.Error,
+        "Cancelled" => Color.Warning,
+        _ => Color.Default
+    };
+}

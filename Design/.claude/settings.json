@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/stefan/Downloads/Keep/School/Leerjaar 2/Periode 4/Build Stronger/Database/**)"
+    ]
+  }
+}

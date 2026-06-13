@@ -7,13 +7,14 @@ using Domain.Value_object;
 
 namespace Application.Interface;
 
-public interface IAthleteRepository : IRepository<Athlete, Guid>
+public interface IAthleteRepository
 {
     Task<Athlete> GetAthleteById(Guid id);
-    Task<Athlete> GetAthleteByEmailAsync(EmailAddress email);
+    Task<Athlete?> GetAthleteByEmailAsync(EmailAddress email);
     Task<IEnumerable<Athlete>> GetAllAthletesAsync();
+    Task<Athlete?> GetAthleteByUsernameAsync(string username);
+    Task<bool> IsAthleteUsernameTakenAsync(string username);
     Task AddAthleteAsync(Athlete athlete);
-    Task UpdateAthleteAsync(UpdateAthleteDto athleteDto);
-    Task UpdateAthletePasswordAsync(UpdatePasswordDto athletePasswordDto);
+    Task UpdateAthleteAsync(Athlete athlete);
     Task DeleteAthleteByEmailAsync(EmailAddress email);
 }

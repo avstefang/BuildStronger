@@ -5,8 +5,8 @@ using Application.Dto;
 using Application.Interface;
 using Domain.Entity;
 using Domain.Exception;
+using Domain.Repository;
 using Domain.Value_object;
-using Infrastructure;
 using Infrastructure.Context_model;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,26 +16,47 @@ public class AthleteRepository(AthleteDbContext dbConnection) : Repository<Athle
 {
     public async Task AddAthleteAsync(Athlete athlete)
     {
+        Athlete? registeredAthlete = await GetAthleteByEmailAsync(athlete.EmailAddress);
+        if (registeredAthlete != null)
+        {
+            throw new AthleteAlreadyExistsException($"Athlete with email '{athlete.EmailAddress.Address}' already exists.");
+        }
+
         await AddAsync(athlete);
     }
 
     public async Task DeleteAthleteByEmailAsync(EmailAddress email)
     {
-        Athlete athlete = await GetAthleteByEmailAsync(email);
+        Athlete? athlete = await GetAthleteByEmailAsync(email);
         if (athlete != null)
             await DeleteAsync(athlete.Id);
     }
 
     public async Task<IEnumerable<Athlete>> GetAllAthletesAsync()
     {
-        return GetAllAsync().Result;
+        return await DbContext.Set<Athlete>()
+            .Include(a => a.Subscriptions)
+            .ThenInclude(s => s.SubscriptionPlan)
+            .ToListAsync();
     }
 
-    public async Task<Athlete> GetAthleteByEmailAsync(EmailAddress email)
+    public async Task<Athlete?> GetAthleteByEmailAsync(EmailAddress email)
     {
         return await DbContext.Set<Athlete>()
             .FirstOrDefaultAsync(a => a.EmailAddress.Address == email.Address)
-            ?? throw new AthleteNotFoundException($"Athlete with email '{email.Address}' not found.");
+            ?? null;
+    }
+
+    public async Task<Athlete?> GetAthleteByUsernameAsync(string username)
+    {
+        return await DbContext.Set<Athlete>()
+            .FirstOrDefaultAsync(a => a.Username == username)
+            ?? null;
+    }
+
+    public async Task<bool> IsAthleteUsernameTakenAsync(string username)
+    {
+        return await GetAthleteByUsernameAsync(username) != null;
     }
 
     public async Task<Athlete> GetAthleteById(Guid id)
@@ -51,17 +72,10 @@ public class AthleteRepository(AthleteDbContext dbConnection) : Repository<Athle
 
     public async Task UpdateAthleteAsync(UpdateAthleteDto athleteDto)
     {
-        Athlete athlete = await GetAthleteById(athleteDto.Id);
+        Athlete athlete = await GetAthleteByEmailAsync(athleteDto.EmailAddress);
         athlete.ChangeEmailAddress(athleteDto.EmailAddress);
         athlete.ChangeFullName(athleteDto.FullName);
         athlete.SetUsername(athleteDto.Username);
-        await UpdateAsync(athlete);
-    }
-
-    public async Task UpdateAthletePasswordAsync(UpdatePasswordDto athletePasswordDto)
-    {
-        Athlete athlete = await GetAthleteById(athletePasswordDto.Id);
-        athlete.SetPassword(athletePasswordDto.NewPassword);
         await UpdateAsync(athlete);
     }
 }

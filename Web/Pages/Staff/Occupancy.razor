@@ -1,0 +1,68 @@
+@page "/staff/occupancy"
+@layout StaffLayout
+
+<PageTitle>Occupancy — BuildStronger Staff</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Lesson Occupancy</MudText>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudDateRangePicker @bind-DateRange="_dateRange" Label="Date range" Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudSelect @bind-Value="_filterWorkout" Label="Workout" Variant="Variant.Outlined">
+            <MudSelectItem Value="@("All")">All</MudSelectItem>
+            <MudSelectItem Value="@("Spinning")">Spinning</MudSelectItem>
+            <MudSelectItem Value="@("Yoga")">Yoga</MudSelectItem>
+            <MudSelectItem Value="@("Bootcamp")">Bootcamp</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+<MudTable Items="FilteredLessons" Hover="true" Striped="true" Bordered="true">
+    <HeaderContent>
+        <MudTh>Date</MudTh>
+        <MudTh>Workout</MudTh>
+        <MudTh>Instructor</MudTh>
+        <MudTh>Start time</MudTh>
+        <MudTh>Capacity</MudTh>
+        <MudTh>Registered</MudTh>
+        <MudTh>Occupancy</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Date.ToShortDateString()</MudTd>
+        <MudTd>@context.Workout</MudTd>
+        <MudTd>@context.Instructor</MudTd>
+        <MudTd>@context.StartTime</MudTd>
+        <MudTd>@context.Capacity</MudTd>
+        <MudTd>@context.Registered</MudTd>
+        <MudTd>
+            <MudProgressLinear Value="@((double)context.Registered / context.Capacity * 100)"
+                               Color="@(context.Registered >= context.Capacity ? Color.Error : Color.Success)"
+                               Rounded="true" Size="Size.Medium" />
+            @context.Registered / @context.Capacity
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private record OccupancyItem(DateTime Date, string Workout, string Instructor, string StartTime, int Capacity, int Registered);
+
+    private DateRange _dateRange = new(DateTime.Today.AddDays(-7), DateTime.Today.AddDays(7));
+    private string _filterWorkout = "All";
+
+    private List<OccupancyItem> _lessons =
+    [
+        new(DateTime.Today.AddDays(-3), "Spinning", "Lisa van der Berg", "07:00", 24, 22),
+        new(DateTime.Today.AddDays(-3), "Yoga", "Mark Jansen", "09:00", 42, 18),
+        new(DateTime.Today.AddDays(-1), "Bootcamp", "TBD", "10:00", 20, 20),
+        new(DateTime.Today, "Spinning", "Lisa van der Berg", "07:00", 24, 10),
+        new(DateTime.Today.AddDays(2), "Yoga", "Mark Jansen", "09:00", 42, 5),
+        new(DateTime.Today.AddDays(4), "Bootcamp", "TBD", "10:00", 20, 3),
+    ];
+
+    private IEnumerable<OccupancyItem> FilteredLessons => _lessons.Where(l =>
+        l.Date >= (_dateRange.Start ?? DateTime.MinValue) &&
+        l.Date <= (_dateRange.End ?? DateTime.MaxValue) &&
+        (_filterWorkout == "All" || l.Workout == _filterWorkout));
+}

@@ -6,7 +6,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface ILessonRepository : IRepository<Lesson, Guid>
+public interface ILessonRepository
 {
     Task<Lesson> GetLessonByIdAsync(Guid lessonId);
     Task<IEnumerable<Lesson>> GetLessonByWorkoutNameAsync(string workoutName);

@@ -1,0 +1,162 @@
+@page "/staff/schedule"
+@layout StaffLayout
+
+<PageTitle>Schedule — BuildStronger Staff</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Lesson Schedule</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog" Class="mb-4">
+    Add Lesson
+</MudButton>
+
+<MudTable Items="_lessons" Hover="true" Striped="true" Bordered="true">
+    <HeaderContent>
+        <MudTh>Workout</MudTh>
+        <MudTh>Day</MudTh>
+        <MudTh>Start time</MudTh>
+        <MudTh>Duration (min)</MudTh>
+        <MudTh>Instructor</MudTh>
+        <MudTh>Recurrence</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Workout</MudTd>
+        <MudTd>@context.Day</MudTd>
+        <MudTd>@context.StartTime</MudTd>
+        <MudTd>@context.DurationMinutes</MudTd>
+        <MudTd>@context.Instructor</MudTd>
+        <MudTd>@context.Recurrence</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteLesson(context)" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudDialog @bind-Visible="_dialogOpen" Options="@(new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true })">
+    <TitleContent>@(_editTarget == null ? "Add Lesson" : "Edit Lesson")</TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudSelect @bind-Value="_form.Workout" Label="Workout" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Spinning")">Spinning</MudSelectItem>
+                    <MudSelectItem Value="@("Yoga")">Yoga</MudSelectItem>
+                    <MudSelectItem Value="@("Bootcamp")">Bootcamp</MudSelectItem>
+                    <MudSelectItem Value="@("Boxing")">Boxing</MudSelectItem>
+                    <MudSelectItem Value="@("Bodyshape")">Bodyshape</MudSelectItem>
+                    <MudSelectItem Value="@("Club Power")">Club Power</MudSelectItem>
+                    <MudSelectItem Value="@("XCO")">XCO</MudSelectItem>
+                    <MudSelectItem Value="@("Total Body Workout")">Total Body Workout</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect @bind-Value="_form.Instructor" Label="Instructor" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("TBD")">TBD</MudSelectItem>
+                    <MudSelectItem Value="@("Lisa van der Berg")">Lisa van der Berg</MudSelectItem>
+                    <MudSelectItem Value="@("Mark Jansen")">Mark Jansen</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect @bind-Value="_form.Day" Label="Day" Variant="Variant.Outlined">
+                    @foreach (var day in new[] { "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday" })
+                    {
+                        <MudSelectItem Value="@day">@day</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudTimePicker @bind-Time="_form.StartTime" Label="Start time" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duration (min)" Variant="Variant.Outlined" Min="1" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudSelect @bind-Value="_form.RecurrenceType" Label="Recurrence" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Once")">Once</MudSelectItem>
+                    <MudSelectItem Value="@("Daily")">Daily</MudSelectItem>
+                    <MudSelectItem Value="@("Weekly")">Weekly</MudSelectItem>
+                    <MudSelectItem Value="@("Monthly")">Monthly</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            @if (_form.RecurrenceType != "Once")
+            {
+                <MudItem xs="12" sm="6">
+                    <MudSelect @bind-Value="_form.RecurrenceEnd" Label="End by" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("EndDate")">End date</MudSelectItem>
+                        <MudSelectItem Value="@("Count")">Number of repetitions</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                @if (_form.RecurrenceEnd == "EndDate")
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker @bind-Date="_form.EndDate" Label="End date" Variant="Variant.Outlined" MinDate="DateTime.Today" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField @bind-Value="_form.RepetitionCount" Label="Number of repetitions" Variant="Variant.Outlined" Min="1" />
+                    </MudItem>
+                }
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLesson">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private record LessonItem(string Id, string Workout, string Day, string StartTime, int DurationMinutes, string Instructor, string Recurrence);
+
+    private List<LessonItem> _lessons =
+    [
+        new("1", "Spinning", "Monday", "07:00", 45, "Lisa van der Berg", "Weekly"),
+        new("2", "Yoga", "Wednesday", "09:00", 60, "Mark Jansen", "Weekly"),
+        new("3", "Bootcamp", "Saturday", "10:00", 50, "TBD", "Once"),
+    ];
+
+    private bool _dialogOpen = false;
+    private LessonItem? _editTarget = null;
+    private LessonFormModel _form = new();
+
+    private class LessonFormModel
+    {
+        public string Workout { get; set; } = "Spinning";
+        public string Instructor { get; set; } = "TBD";
+        public string Day { get; set; } = "Monday";
+        public TimeSpan? StartTime { get; set; } = new TimeSpan(9, 0, 0);
+        public int DurationMinutes { get; set; } = 45;
+        public string RecurrenceType { get; set; } = "Once";
+        public string RecurrenceEnd { get; set; } = "EndDate";
+        public DateTime? EndDate { get; set; }
+        public int RepetitionCount { get; set; } = 1;
+    }
+
+    private void OpenAddDialog()
+    {
+        _editTarget = null;
+        _form = new();
+        _dialogOpen = true;
+    }
+
+    private void OpenEditDialog(LessonItem item)
+    {
+        _editTarget = item;
+        _form = new() { Workout = item.Workout, Day = item.Day, Instructor = item.Instructor, DurationMinutes = item.DurationMinutes };
+        _dialogOpen = true;
+    }
+
+    private void SaveLesson()
+    {
+        // TODO: call API to add or update lesson with recurrence settings
+        _dialogOpen = false;
+    }
+
+    private void DeleteLesson(LessonItem item)
+    {
+        // TODO: call API to delete lesson
+        _lessons.Remove(item);
+    }
+}

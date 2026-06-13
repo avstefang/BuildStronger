@@ -5,7 +5,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface ILocationRepository : IRepository<Location, Guid>
+public interface ILocationRepository
 {
     Task<Location> GetLocationByIdAsync(Guid locationId);
     Task<Location> GetLocationByNameAsync(string locationName);

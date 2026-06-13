@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Application.Dto;
 
-public class UsernameDto(Guid id, string username)
+public class UpdateUsernameDto(string email, string username)
 {
-    public Guid Id { get; private set; } = id;
+    public string Email { get; private set; } = email;
     public string Username { get; private set; } = username;
 }

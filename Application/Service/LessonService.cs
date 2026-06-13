@@ -13,10 +13,10 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
     private readonly ILessonRepository _lessonRepository = lessonRepository;
     private readonly IWorkoutRepository _workoutRepository = workoutRepository;
 
-    public async Task<Lesson> CreateLessonAsync(string workoutName, Schedule schedule, int maxCapacity, int customDuration = 0)
+    public async Task<Lesson> CreateLessonAsync(string workoutName, Schedule schedule, Room room, int maxCapacity, int customDuration = 0)
     {
         Workout workout = await _workoutRepository.GetWorkoutByNameAsync(workoutName);
-        Lesson lesson = new(workout, schedule, maxCapacity, customDuration);
+        Lesson lesson = new(workout, schedule, maxCapacity, room, customDuration);
         await _lessonRepository.AddLessonAsync(lesson);
         return lesson;
     }

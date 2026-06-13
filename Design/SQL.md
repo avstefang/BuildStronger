@@ -14,6 +14,7 @@
     - customDuration: NULLABLE, INT
     - maxCapacity: NOT NULL, INT,
     - instructorId: (create unknown instructor with id 1 later on), FK, INT
+    - roomId: NOT NULL, FK, INT
 * schedule
     - id: GUID, NOT NULL, Increment
     - startTime: NOT NULL, TIME
@@ -27,7 +28,6 @@
     - name: NOT NULL, Unique
     - description: NOT NULL, STRING
     - duration: NOT NULL
-    - roomId: NOT NULL, FK, INT
 * workout_equipment
     - workoutId: GUID, NOT NULL, FK
     - equipmentId: GUID, NOT NULL, FK

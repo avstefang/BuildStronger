@@ -80,4 +80,12 @@ public class Subscription
     }
 
     public DateOnly GetEndDate() => StartDate.AddMonths(SubscriptionPlan.DurationInMonths);
+
+    public void LoadSubscriptionPlan(SubscriptionPlan subscriptionPlan)
+    {
+        if (SubscriptionPlan != null)
+            throw new InvalidOperationException("Subscription plan is already loaded.");
+
+        SubscriptionPlan = subscriptionPlan;
+    }
 }

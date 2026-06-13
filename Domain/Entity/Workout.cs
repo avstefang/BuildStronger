@@ -3,13 +3,12 @@ using Domain.Value_object;
 
 namespace Domain.Entity;
 
-public class Workout(string name, string description, Duration duration, Room room, List<Equipment>? equipment = null)
+public class Workout(string name, string description, Duration duration, List<Equipment>? equipment = null)
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string Name { get; private set; } = name;
     public string Description { get; private set; } = description;
     public Duration Duration { get; private set; } = duration;
-    public Room Room { get; set; } = room;
     public List<Equipment>? Equipment { get; set; } = equipment;
 
     public void UpdateName(string name)

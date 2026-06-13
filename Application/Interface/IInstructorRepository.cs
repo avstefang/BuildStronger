@@ -7,7 +7,7 @@ using Domain.Value_object;
 
 namespace Application.Interface;
 
-public interface IInstructorRepository : IRepository<Instructor, Guid>
+public interface IInstructorRepository
 {
     Task<Instructor> GetInstructorByIdAsync(Guid instructorId);
     Task<Instructor> GetInstructorByEmailAsync(EmailAddress emailAddress);

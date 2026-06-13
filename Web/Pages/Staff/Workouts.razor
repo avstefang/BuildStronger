@@ -1,0 +1,104 @@
+@page "/staff/workouts"
+@layout StaffLayout
+
+<PageTitle>Workouts — BuildStronger Staff</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Workouts</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog" Class="mb-4">
+    Add Workout
+</MudButton>
+
+<MudTable Items="_workouts" Hover="true" Striped="true" Bordered="true">
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Duration (min)</MudTh>
+        <MudTh>Room</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Name</MudTd>
+        <MudTd>@context.Description</MudTd>
+        <MudTd>@context.DurationMinutes</MudTd>
+        <MudTd>@context.Room</MudTd>
+        <MudTd>
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteWorkout(context)" />
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudDialog @bind-Visible="_dialogOpen">
+    <TitleContent>@(_editTarget == null ? "Add Workout" : "Edit Workout")</TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_form.Name" Label="Name" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="_form.Description" Label="Description" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
+        <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duration (minutes)" Variant="Variant.Outlined" Min="1" Class="mb-3" />
+        <MudSelect @bind-Value="_form.Room" Label="Room" Variant="Variant.Outlined">
+            <MudSelectItem Value="@("Room 1 (cap. 42)")">Room 1 (cap. 42)</MudSelectItem>
+            <MudSelectItem Value="@("Room 2 (cap. 32)")">Room 2 (cap. 32)</MudSelectItem>
+            <MudSelectItem Value="@("Room 3 (cap. 24)")">Room 3 (cap. 24)</MudSelectItem>
+            <MudSelectItem Value="@("Outdoor (cap. 20)")">Outdoor (cap. 20)</MudSelectItem>
+            <MudSelectItem Value="@("Spinning room (cap. 24)")">Spinning room (cap. 24)</MudSelectItem>
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveWorkout">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private record WorkoutItem(string Id, string Name, string Description, int DurationMinutes, string Room);
+
+    private List<WorkoutItem> _workouts =
+    [
+        new("1", "Spinning", "Cardio on bikes", 45, "Spinning room (cap. 24)"),
+        new("2", "Yoga", "Flexibility and mindfulness", 60, "Room 1 (cap. 42)"),
+        new("3", "Bootcamp", "High intensity outdoor", 50, "Outdoor (cap. 20)"),
+        new("4", "Boxing", "Technique and conditioning", 60, "Outdoor (cap. 20)"),
+        new("5", "Bodyshape", "Full body sculpting", 45, "Room 2 (cap. 32)"),
+        new("6", "Club Power", "Strength with weights", 50, "Room 2 (cap. 32)"),
+        new("7", "XCO", "Cross-training", 45, "Room 3 (cap. 24)"),
+        new("8", "Total Body Workout", "Full body conditioning", 60, "Room 3 (cap. 24)"),
+    ];
+
+    private bool _dialogOpen = false;
+    private WorkoutItem? _editTarget = null;
+    private WorkoutFormModel _form = new();
+
+    private class WorkoutFormModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int DurationMinutes { get; set; } = 45;
+        public string Room { get; set; } = "Room 1 (cap. 42)";
+    }
+
+    private void OpenAddDialog()
+    {
+        _editTarget = null;
+        _form = new();
+        _dialogOpen = true;
+    }
+
+    private void OpenEditDialog(WorkoutItem item)
+    {
+        _editTarget = item;
+        _form = new() { Name = item.Name, Description = item.Description, DurationMinutes = item.DurationMinutes, Room = item.Room };
+        _dialogOpen = true;
+    }
+
+    private void SaveWorkout()
+    {
+        // TODO: call API to add or update workout
+        _dialogOpen = false;
+    }
+
+    private void DeleteWorkout(WorkoutItem item)
+    {
+        // TODO: call API to delete workout (also deletes all linked lessons)
+        _workouts.Remove(item);
+    }
+}

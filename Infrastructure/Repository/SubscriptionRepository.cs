@@ -3,6 +3,7 @@ using Application.Interface;
 using Infrastructure;
 using Domain.Enum;
 using Infrastructure.Context_model;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repository;
 
@@ -13,7 +14,7 @@ public class SubscriptionRepository(SubscriptionDbContext dbConnection) : Reposi
         await AddAsync(subscription);
     }
 
-    public async Task<IEnumerable<Subscription>> GetAllSubscriptionsAsync()
+    public async Task<IEnumerable<Subscription>?> GetAllSubscriptionsAsync()
     {
         return await GetAllAsync();
     }
@@ -25,6 +26,20 @@ public class SubscriptionRepository(SubscriptionDbContext dbConnection) : Reposi
             throw new InvalidOperationException($"Subscription with ID {subscriptionId} not found");
         return subscription;
     }
+
+    public async Task<IEnumerable<Subscription>?> GetSubscriptionsByAthleteIdAsync(Guid athleteId)
+    {
+        IEnumerable<Subscription>? subscriptions = await DbContext.Set<Subscription>()
+            .Include(s => s.SubscriptionPlan)
+            .Where(s => EF.Property<Guid>(s, "AthleteId") == athleteId)
+            .OrderByDescending(s => s.StartDate)
+            .ToListAsync();
+
+        return subscriptions;
+    }
+
+    public async Task<Subscription?> GetSubscriptionByAthleteIdAsync(Guid athleteId) =>
+        await GetSubscriptionsByAthleteIdAsync(athleteId).ContinueWith(t => t.Result?.FirstOrDefault());
 
     public async Task<SubscriptionStatus> UpdateSubscriptionStatusAsync(Subscription subscription)
     {

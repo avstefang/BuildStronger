@@ -52,7 +52,7 @@ public class SubscriptionService(
 
         athlete.AddSubscription(subscription);
         await _subscriptionRepository.AddSubscriptionAsync(subscription);
-        await _athleteRepository.UpdateAsync(athlete);
+        await _athleteRepository.UpdateAthleteAsync(athlete);
         return athlete;
     }
 
@@ -100,7 +100,7 @@ public class SubscriptionService(
 
         athlete.AddSubscription(subscription);
         await _subscriptionRepository.AddSubscriptionAsync(subscription);
-        await _athleteRepository.UpdateAsync(athlete);
+        await _athleteRepository.UpdateAthleteAsync(athlete);
         return athlete;
     }
 
@@ -110,8 +110,8 @@ public class SubscriptionService(
         if (subscription != null)
         {
             subscription.CancelSubscription();
-            await _subscriptionRepository.UpdateAsync(subscription);
-            await _athleteRepository.UpdateAsync(athlete);
+            await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
+            await _athleteRepository.UpdateAthleteAsync(athlete);
         }
     }
 
@@ -123,7 +123,7 @@ public class SubscriptionService(
         }
 
         subscription.ActivateSubscription();
-        await _subscriptionRepository.UpdateAsync(subscription);
+        await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
         return true;
     }
 }

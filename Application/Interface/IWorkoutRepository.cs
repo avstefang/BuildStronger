@@ -5,7 +5,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IWorkoutRepository : IRepository<Workout, Guid>
+public interface IWorkoutRepository
 {
     Task<Workout> GetWorkoutByNameAsync(string workoutName);
     Task<IEnumerable<Workout>> GetAllWorkoutsAsync();

@@ -5,7 +5,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IEquipmentRoomRepository : IRepository<EquipmentRoom, Guid>
+public interface IEquipmentRoomRepository
 {
     Task<EquipmentRoom> GetEquipmentRoomByIdAsync(Guid id);
     Task<EquipmentRoom> GetEquipmentRoomByNameAsync(string roomName);

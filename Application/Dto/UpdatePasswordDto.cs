@@ -1,12 +1,20 @@
-﻿using System;
+﻿using Domain.Value_object;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Application.Dto;
 
-public class UpdatePasswordDto(Guid id, string currentPassword, string newPassword)
+public class UpdatePasswordDto
 {
-    public Guid Id { get; private set; } = id;
-    public string CurrentPassword { get; private set; } = currentPassword;
-    public string NewPassword { get; private set; } = newPassword;
+    public string Email { get; private set; }
+    public string CurrentPassword { get; private set; }
+    public string NewPassword { get; private set; }
+
+    public UpdatePasswordDto(string email, string currentPassword, string newPassword)
+    {
+        Email = email;
+        CurrentPassword = currentPassword;
+        NewPassword = newPassword;
+    }
 }

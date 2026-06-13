@@ -1,7 +1,81 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>BuildStronger — Your Gym</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudPaper Elevation="0" Style="background: linear-gradient(135deg, #C62828 0%, #8E0000 100%); border-radius: 16px; padding: 64px 48px; margin-bottom: 48px;">
+    <MudText Typo="Typo.h2" Style="color: white; font-weight: 800;">Build Stronger.</MudText>
+    <MudText Typo="Typo.h5" Style="color: rgba(255,255,255,0.85); margin-top: 8px; margin-bottom: 32px;">
+        Group classes, spinning, bootcamp and more. Your gym, your pace.
+    </MudText>
+    <MudButton Href="/register" Variant="Variant.Filled" Size="Size.Large"
+               Style="background: white; color: #C62828; font-weight: 700; border-radius: 8px;">
+        Join now
+    </MudButton>
+</MudPaper>
 
-Welcome to your new app.
+<MudText Typo="Typo.h5" GutterBottom="true">Our Classes</MudText>
+<MudGrid Class="mb-10">
+    @foreach (var lesson in _lessons)
+    {
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Elevation="2" Style="height: 100%;">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">@lesson.Name</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Style="font-weight: 600;">@lesson.Location</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">@lesson.Description</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+<MudText Typo="Typo.h5" GutterBottom="true">Subscription Plans</MudText>
+<MudGrid>
+    @foreach (var plan in _plans)
+    {
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard Outlined="@(!plan.Featured)" Elevation="@(plan.Featured ? 4 : 1)" Style="@(plan.Featured ? "border: 2px solid #C62828; height: 100%;" : "height: 100%;")">
+                <MudCardContent>
+                    @if (plan.Featured)
+                    {
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mb-2">Most popular</MudChip>
+                    }
+                    <MudText Typo="Typo.h6">@plan.Name</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 800;">€@plan.Price</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@plan.Description</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Href="/register" Variant="@(plan.Featured ? Variant.Filled : Variant.Outlined)"
+                               Color="Color.Primary" FullWidth="true">
+                        Sign up
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    private record LessonInfo(string Name, string Location, string Description);
+    private record PlanInfo(string Name, string Price, string Description, bool Featured = false);
+
+    private List<LessonInfo> _lessons =
+    [
+        new("Spinning", "Spinning room", "4 rows of 6 bikes — pick your spot"),
+        new("Yoga", "Room 1", "Relaxing flow for all levels"),
+        new("Bootcamp", "Outdoor", "High intensity outdoor training"),
+        new("Boxing", "Outdoor", "Technique and conditioning"),
+        new("Bodyshape", "Room 2", "Full body sculpting class"),
+        new("Club Power", "Room 2", "Strength training with weights"),
+        new("XCO", "Room 3", "Cross-training with XCO equipment"),
+        new("Total Body Workout", "Room 3", "Full body conditioning"),
+    ];
+
+    private List<PlanInfo> _plans =
+    [
+        new("2x per week", "29/mo", "Train up to twice per week, billed monthly"),
+        new("2x per week", "299/yr", "Train up to twice per week, billed yearly"),
+        new("Unlimited", "55/mo", "Unlimited training, billed monthly", Featured: true),
+        new("Unlimited", "549/yr", "Unlimited training, billed yearly"),
+    ];
+}

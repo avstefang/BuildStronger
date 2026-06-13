@@ -1,6 +1,66 @@
-﻿<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code {
+    private MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#C62828",
+            PrimaryDarken = "#8E0000",
+            PrimaryLighten = "#FF5F52",
+            PrimaryContrastText = "#FFFFFF",
+
+            Secondary = "#212121",
+            SecondaryContrastText = "#FFFFFF",
+
+            AppbarBackground = "#C62828",
+            AppbarText = "#FFFFFF",
+
+            DrawerBackground = "#1A1A1A",
+            DrawerText = "#F5F5F5",
+            DrawerIcon = "#EF9A9A",
+
+            Background = "#F5F5F5",
+            Surface = "#FFFFFF",
+
+            TextPrimary = "#212121",
+            TextSecondary = "#616161",
+
+            ActionDefault = "#C62828",
+
+            Success = "#2E7D32",
+            Warning = "#F57F17",
+            Error = "#B71C1C",
+            Info = "#1565C0",
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = ["Roboto", "sans-serif"],
+            },
+            H3 = new H3Typography
+            {
+                FontWeight = "700",
+            },
+            H4 = new H4Typography
+            {
+                FontWeight = "700",
+            },
+            H5 = new H5Typography
+            {
+                FontWeight = "600",
+            },
+        },
+    };
+}

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Infrastructure.Repository;
 
-public abstract class Repository<T, Id> : IRepository<T, Id> where T : class
+public abstract class Repository<T, Id> where T : class
 {
     protected DbContext DbContext;
 
@@ -15,25 +15,25 @@ public abstract class Repository<T, Id> : IRepository<T, Id> where T : class
         DbContext = dbContext;
     }
 
-    public async Task AddAsync(T entity)
+    protected async Task AddAsync(T entity)
     {
         await DbContext.Set<T>().AddAsync(entity);
         await DbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Id id)
+    protected async Task DeleteAsync(Id id)
     {
         T entity = await DbContext.Set<T>().FindAsync(id) ?? throw new Exception("Entity not found");
         DbContext.Set<T>().Remove(entity);
         await DbContext.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    protected async Task<IEnumerable<T>> GetAllAsync()
     {
         return await DbContext.Set<T>().ToListAsync();
     }
 
-    public async Task<T?> GetByIdAsync(Id id)
+    protected async Task<T?> GetByIdAsync(Id id)
     {
         return await DbContext.Set<T>().FindAsync(id);
     }
@@ -48,7 +48,7 @@ public abstract class Repository<T, Id> : IRepository<T, Id> where T : class
         return DbContext.Set<T>().Find(key) != null;
     }
 
-    public async Task UpdateAsync(T entity)
+    protected async Task UpdateAsync(T entity)
     {
         if (!EntityExists(entity))
         {

@@ -6,7 +6,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IScheduleRepository : IRepository<Schedule, Guid>
+public interface IScheduleRepository
 {
     Task<Schedule> GetScheduleByIdAsync(Guid scheduleId);
     Task<IEnumerable<Schedule>> GetAllSchedulesAsync();

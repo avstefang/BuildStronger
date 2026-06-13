@@ -5,7 +5,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface ISubscriptionPlanRepository : IRepository<SubscriptionPlan, Guid>
+public interface ISubscriptionPlanRepository
 {
     Task<SubscriptionPlan> GetSubscriptionPlanById(Guid subscriptionPlanId);
     Task<SubscriptionPlan> GetSubscriptionPlanByNameAsync(string name);

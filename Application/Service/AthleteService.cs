@@ -11,18 +11,28 @@ using System.Text;
 
 namespace Application.Service;
 
-public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt passwordCrypt, IEmailSender? emailSender)
+public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt passwordCrypt, IEmailSender? emailSender, ISubscriptionRepository subscriptionRepository)
 {
     private readonly IAthleteRepository _athleteRepository = athleteRepository;
     private readonly IPasswordCrypt _passwordCrypt = passwordCrypt;
     private readonly IEmailSender? _emailSender = emailSender;
 
-    public async Task RegisterAthleteAsync(RegisterAthleteDto athleteDto)
+    public async Task<Athlete?> RegisterAthleteAsync(RegisterAthleteDto athleteDto)
     {
         string passwordHash = _passwordCrypt.HashPassword(athleteDto.Password);
-        var email = new EmailAddress(athleteDto.Email);
-        var fullName = new FullName(athleteDto.FirstName, athleteDto.LastName);
+        EmailAddress email = new(athleteDto.Email);
+        FullName fullName = new(athleteDto.FirstName, athleteDto.LastName);
+
+        string username = email.Address.Split("@")[0];
+        int count = 0;
+        while (await _athleteRepository.GetAthleteByUsernameAsync(username) != null)
+        {
+            count++;
+            username = $"{email.Address.Split("@")[0]}{count}";
+        }
+
         Athlete athlete = new(email, fullName, passwordHash);
+        athlete.SetUsername(username);
 
         // Save the athlete to the repository
         await _athleteRepository.AddAthleteAsync(athlete);
@@ -33,6 +43,8 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
             EmailContentDto template = EmailTemplate.WelcomeEmail(athlete.FullName);
             await _emailSender.SendEmailAsync(athlete.EmailAddress, template.Subject, template.Body);
         }
+
+        return athlete;
     }
 
     public async Task<Athlete?> LoginAthleteAsync(EmailAddress email, SecureString password)
@@ -52,8 +64,84 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         return verifyPassword ? athlete : null;
     }
 
-    public async Task UpdateAthlete(UpdateAthleteDto updateAthleteDto)
+    public async Task<Athlete?> UpdateAthlete(UpdateAthleteDto updateAthleteDto)
     {
-        await _athleteRepository.UpdateAthleteAsync(updateAthleteDto);
+        Athlete athlete = await _athleteRepository.GetAthleteByEmailAsync(updateAthleteDto.EmailAddress);
+        if (athlete == null)
+        {
+            return null;
+        }
+
+        await _athleteRepository.UpdateAthleteAsync(athlete);
+        return athlete;
+    }
+
+    public async Task<Athlete?> GetAthleteByEmail(EmailAddress emailAddress)
+    {
+        try
+        {
+            return await _athleteRepository.GetAthleteByEmailAsync(emailAddress);
+        }
+        catch (AthleteNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    public async Task UpdateAthletePasswordAsync(UpdatePasswordDto updatePasswordDto)
+    {
+        if (updatePasswordDto.CurrentPassword == updatePasswordDto.NewPassword)
+            throw new ArgumentException("New password cannot be the same as the current password");
+
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(new EmailAddress(updatePasswordDto.Email));
+        if (athlete == null)
+            throw new AthleteNotFoundException($"Athlete with email address {updatePasswordDto.Email} not found");
+
+        if (!_passwordCrypt.VerifyPassword(updatePasswordDto.CurrentPassword, athlete.Password))
+            throw new ArgumentException("Current password is incorrect");
+
+        string newPasswordHash = _passwordCrypt.HashPassword(updatePasswordDto.NewPassword);
+        athlete.SetPassword(newPasswordHash);
+        await _athleteRepository.UpdateAthleteAsync(athlete);
+    }
+
+    public async Task UpdateUsernameAsync(UpdateUsernameDto updateUsernameDto)
+    {
+        if (await _athleteRepository.IsAthleteUsernameTakenAsync(updateUsernameDto.Username))
+            throw new ArgumentException($"Username {updateUsernameDto.Username} is already taken");
+
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(new EmailAddress(updateUsernameDto.Email));
+        if (athlete == null)
+            throw new AthleteNotFoundException($"Athlete with email address {updateUsernameDto.Email} not found");
+        athlete.SetUsername(updateUsernameDto.Username);
+        await _athleteRepository.UpdateAthleteAsync(athlete);
+    }
+
+    public async Task<IEnumerable<Subscription>?> GetAthleteSubscriptionsAsync(EmailAddress email)
+    {
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
+        if (athlete == null)
+            throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
+        IEnumerable<Subscription>? subscriptions = await subscriptionRepository.GetSubscriptionsByAthleteIdAsync(athlete.Id);
+        return subscriptions;
+    }
+
+    public async Task<IEnumerable<Athlete>> GetAllAthletesAsync()
+    {
+        return await _athleteRepository.GetAllAthletesAsync();
+    }
+
+    public async Task DeleteAthleteByEmailAsync(EmailAddress email)
+    {
+        await _athleteRepository.DeleteAthleteByEmailAsync(email);
+    }
+
+    public async Task PromoteToInstructorAsync(EmailAddress email)
+    {
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
+        if (athlete == null)
+            throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
+        athlete.PromoteToInstructor();
+        await _athleteRepository.UpdateAthleteAsync(athlete);
     }
 }

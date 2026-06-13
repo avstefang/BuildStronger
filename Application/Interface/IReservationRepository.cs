@@ -6,7 +6,7 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IReservationRepository : IRepository<Reservation, Guid>
+public interface IReservationRepository
 {
     Task<Reservation> GetReservationByNameAsync(string workoutName);
     Task<IEnumerable<Reservation>> GetAllReservationsByLessonIdAsync(Guid lessonId);
