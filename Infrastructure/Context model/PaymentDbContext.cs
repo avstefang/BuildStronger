@@ -3,43 +3,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Context_model;
 
-public class AthleteDbContext(DbContextOptions<AthleteDbContext> options) : DbContext(options)
+public class PaymentDbContext(DbContextOptions<PaymentDbContext> options) : DbContext(options)
 {
-    public DbSet<Athlete> Athlete { get; set; }
+    public DbSet<Payment> Payment { get; set; }
     public DbSet<Subscription> Subscription { get; set; }
     public DbSet<SubscriptionPlan> SubscriptionPlan { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Athlete>(builder =>
+        modelBuilder.Entity<Payment>(builder =>
         {
-            builder.ToTable("athlete");
-            builder.HasMany(a => a.Subscriptions)
-                   .WithOne()
-                   .HasForeignKey("AthleteId");
-            builder.OwnsOne(a => a.EmailAddress, e =>
+            builder.ToTable("payment");
+            builder.Property(p => p.Amount).HasColumnName("amount");
+            builder.Property(p => p.Currency).HasColumnName("currency").HasConversion<string>();
+            builder.Property(p => p.Method).HasColumnName("method").HasConversion<string>();
+            builder.Property(p => p.PayedAt).HasColumnName("payedAt");
+            builder.Property(p => p.Status).HasColumnName("status").HasConversion<string>();
+            builder.OwnsOne(p => p.ProcessorId, pi =>
             {
-                e.Property(ea => ea.Address).HasColumnName("emailAddress");
+                pi.Property(p => p.Id).HasColumnName("processorId").HasConversion<string>();
             });
-            builder.OwnsOne(a => a.FullName, fn =>
-            {
-                fn.Property(f => f.FirstName).HasColumnName("firstName");
-                fn.Property(f => f.LastName).HasColumnName("lastName");
-            });
-            builder.Property(a => a.Role).HasColumnName("role").HasConversion<string>();
-            builder.OwnsOne(a => a.PhotoPath, pp =>
-            {
-                pp.Property(p => p.Path).HasColumnName("photoPath");
-            });
+            builder.HasOne(p => p.Subscription)
+                   .WithMany()
+                   .HasForeignKey("subscriptionId");
         });
 
         modelBuilder.Entity<Subscription>(builder =>
         {
             builder.ToTable("subscription");
-            builder.Property<Guid>("AthleteId").HasColumnName("athleteId");
             builder.HasOne(s => s.SubscriptionPlan)
                    .WithMany()
-                   .HasForeignKey("SubscriptionPlanId");
+                   .HasForeignKey("subscriptionPlanId");
+            builder.Property<Guid>("AthleteId").HasColumnName("athleteId");
             builder.Property<Guid>("SubscriptionPlanId").HasColumnName("subscriptionPlanId");
             builder.Property(s => s.StartDate).HasColumnName("startDate");
             builder.Property(s => s.Status).HasColumnName("status").HasConversion<string>();
@@ -53,8 +48,8 @@ public class AthleteDbContext(DbContextOptions<AthleteDbContext> options) : DbCo
             builder.Property(sp => sp.Price).HasColumnName("price");
             builder.Property(sp => sp.DurationInMonths).HasColumnName("durationInMonths");
             builder.Property(sp => sp.MonthlyCreditAmount).HasColumnName("monthlyCreditAmount");
-            builder.Property(sp => sp.Currency).HasColumnName("paymentCurrency").HasConversion<string>();
             builder.Property(sp => sp.PaymentMethod).HasColumnName("paymentMethod").HasConversion<string>();
+            builder.Property(sp => sp.Currency).HasColumnName("paymentCurrency").HasConversion<string>();
         });
     }
 }

@@ -11,11 +11,12 @@ public class Reservation
     public DateTime ReservationDate { get; private set; }
     public ReservationStatus Status { get; private set; } = ReservationStatus.Waitinglist;
     public DateTime ReservedAt { get; private set; } = DateTime.Now;
+    public EquipmentSpot? EquipmentSpot { get; private set; } = null;
 
     public Reservation(Athlete athlete, DateTime reservationDate, Lesson lesson)
     {
-        if (DateTime.Now.AddDays(7) > reservationDate)
-            throw new DomainException("A reservation cannot be made less than 7 days in advance.");
+        if (DateTime.Now.AddDays(7) < reservationDate)
+            throw new DomainException("A reservation cannot be made more than 7 days in advance.");
 
         Athlete = athlete;
         ReservationDate = reservationDate;
@@ -39,7 +40,7 @@ public class Reservation
         if (DateTime.Now.AddHours(1) > ReservationDate)
             throw new DomainException("A reservation cannot be cancelled less than 1 hour before the reservation date.");
 
-        Status = Status != ReservationStatus.Accepted ? ReservationStatus.Cancelled :
+        Status = Status == ReservationStatus.Accepted ? ReservationStatus.Cancelled :
             throw new DomainException("Cannot cancel a reservation that is not accepted.");
     }
 
@@ -47,5 +48,13 @@ public class Reservation
     {
         Status = Status == ReservationStatus.Waitinglist ? ReservationStatus.Accepted : 
             throw new DomainException("Cannot accept a reservation that is not on the waiting list.");
+    }
+
+    public void SetEquipmentSpot(EquipmentSpot equipmentSpot)
+    {
+        if (!Lesson.Workout.Equipment.Contains(equipmentSpot.Equipment))
+            throw new DomainException($"Equipment spot {equipmentSpot.Id} is not part of the workout for lesson {Lesson.Id}.");
+
+        EquipmentSpot = equipmentSpot;
     }
 }

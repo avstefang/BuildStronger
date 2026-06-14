@@ -10,7 +10,6 @@ public class Lesson
     public int CustomDuration { get; private set; }
     public int MaxCapacity { get; private set; }
     public Instructor? Instructor { get; private set; } = null;
-    public Equipment? Equipment { get; private set; } = null;
     public Room Room { get; private set; } = null!;
 
     public Lesson(Workout workout, Schedule schedule, int maxCapacity, Room room, int customDuration = 0)
@@ -56,10 +55,5 @@ public class Lesson
     {
         int totalDuration = CustomDuration > 0 ? CustomDuration : Workout.Duration.Minutes;
         return Schedule.StartTime.Add(TimeSpan.FromMinutes(totalDuration));
-    }
-
-    public void AssignEquipment(Equipment equipment)
-    {
-        Equipment = equipment;
     }
 }

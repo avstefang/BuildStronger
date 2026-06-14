@@ -1,5 +1,7 @@
-﻿using Application.Interface;
+﻿using Application.Dto;
+using Application.Interface;
 using Domain.Entity;
+using Domain.Value_object;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,27 +22,27 @@ public class SubscriptionService(
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IPaymentProcessor _paymentProcessor = paymentProcessor;
 
-    public async Task<Athlete> RegisterSubscriptionAsync(Athlete athlete, string subscriptionName, DateOnly? startDate, bool autoRenew = false)
+    public async Task<Athlete> RegisterSubscriptionAsync(AddSubscriptionDto dto)
     {
-        SubscriptionPlan subscriptionPlan = await _subscriptionPlanRepository.GetSubscriptionPlanByNameAsync(subscriptionName);
-        Subscription subscription = new(subscriptionPlan, startDate);
-        Payment payment = new(subscription);
+        EmailAddress? emailAddress = new(dto.Email);
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
+            throw new InvalidOperationException($"Athlete with email '{dto.Email}' not found.");
 
-        Guid paymentId = await _paymentProcessor.ProcessPaymentAsync(payment);
-        if (paymentId != Guid.Empty)
+        SubscriptionPlan? subscriptionPlan = await _subscriptionPlanRepository.GetSubscriptionPlanByIdAsync(dto.SubscriptionPlanId) ??
+            throw new InvalidOperationException($"Subscription plan with ID '{dto.SubscriptionPlanId}' not found.");
+
+        Subscription? subscription = new(subscriptionPlan, dto.StartDate);
+        Payment? payment = new(dto.ProcessorId, subscription);
+
+        ProcessorId? processorId = await _paymentProcessor.ProcessPaymentAsync(payment);
+        if (processorId != null)
         {
-            payment.SetProcessorId(paymentId);
             payment.IsSuccessful();
 
-            if (autoRenew)
-            {
-                subscription.EnableAutoRenewal();
-            }
+            if (dto.AutoRenew) subscription.EnableAutoRenewal();
 
-            if (startDate == DateOnly.FromDateTime(DateTime.UtcNow))
-            {
+            if (dto.StartDate == DateOnly.FromDateTime(DateTime.UtcNow))
                 subscription.ActivateSubscription();
-            }
         }
         else
         {
@@ -49,63 +51,32 @@ public class SubscriptionService(
         }
 
         await _paymentRepository.CreatePaymentAsync(payment);
+        await _subscriptionRepository.AddSubscriptionAsync(subscription);
 
         athlete.AddSubscription(subscription);
-        await _subscriptionRepository.AddSubscriptionAsync(subscription);
         await _athleteRepository.UpdateAthleteAsync(athlete);
         return athlete;
     }
 
-    public async Task<Athlete> ChangeSubscriptionAsync(Athlete athlete, string newSubscriptionName, DateOnly? startDate, bool autoRenew = false)
+    public async Task<Athlete> ChangeSubscriptionAsync(AddSubscriptionDto dto)
     {
-        Subscription? lastSubscription = athlete.GetLastSubscription();
-        if (newSubscriptionName == lastSubscription?.SubscriptionPlan.Name)
-        {
-            throw new InvalidOperationException("Athlete already has the specified subscription.");
-        }
+        EmailAddress? emailAddress = new(dto.Email);
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
+            throw new InvalidOperationException($"Athlete with email '{dto.Email}' not found.");
 
-        DateOnly? endDateLastSubscription = lastSubscription?.GetEndDate() ?? null;
-        if (startDate != null && startDate < endDateLastSubscription)
-        {
-            startDate = endDateLastSubscription.Value.AddDays(1);
-        }
+        Subscription? activeSubscription = athlete.GetActiveSubscription();
+        DateOnly startDate = activeSubscription != null ? activeSubscription.GetEndDate().AddDays(1) : dto.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
 
-        SubscriptionPlan subscriptionPlan = await _subscriptionPlanRepository.GetSubscriptionPlanByNameAsync(newSubscriptionName);
-        Subscription subscription = new(subscriptionPlan, startDate);
-        Payment payment = new(subscription);
-
-        Guid paymentId = await _paymentProcessor.ProcessPaymentAsync(payment);
-        if (paymentId != Guid.Empty)
-        {
-            payment.SetProcessorId(paymentId);
-            payment.IsSuccessful();
-
-            if (autoRenew)
-            {
-                subscription.EnableAutoRenewal();
-            }
-
-            if (startDate == DateOnly.FromDateTime(DateTime.UtcNow))
-            {
-                subscription.ActivateSubscription();
-            }
-        }
-        else
-        {
-            payment.IsFailed();
-            subscription.FailSubscription();
-        }
-
-        await _paymentRepository.CreatePaymentAsync(payment);
-
-        athlete.AddSubscription(subscription);
-        await _subscriptionRepository.AddSubscriptionAsync(subscription);
-        await _athleteRepository.UpdateAthleteAsync(athlete);
-        return athlete;
+        dto.ChangeStartDate(startDate);
+        return await RegisterSubscriptionAsync(dto);
     }
 
-    public async Task CancelSubscriptionAsync(Athlete athlete)
+    public async Task CancelSubscriptionAsync(string email)
     {
+        EmailAddress? emailAddress = new(email);
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
+            throw new InvalidOperationException($"Athlete with email '{email}' not found.");
+
         var subscription = athlete.GetLastSubscription();
         if (subscription != null)
         {
@@ -115,15 +86,13 @@ public class SubscriptionService(
         }
     }
 
-    public async Task<bool> ActivateLatentSubscriptionAsync(Subscription subscription)
+    public async Task ActivateLatentSubscriptionAsync()
     {
-        if (subscription.StartDate < DateOnly.FromDateTime(DateTime.UtcNow))
+        IEnumerable<Subscription>? latentSubscriptions = await _subscriptionRepository.GetAllLatentSubscriptionsAsync();
+        foreach (Subscription subscription in latentSubscriptions!)
         {
-            return false;
+            subscription.ActivateSubscription();
+            await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
         }
-
-        subscription.ActivateSubscription();
-        await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
-        return true;
     }
 }

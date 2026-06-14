@@ -1,5 +1,6 @@
 using Domain.Enum;
 using Domain.Exception;
+using Domain.Value_object;
 
 namespace Domain.Entity;
 
@@ -11,11 +12,12 @@ public class Payment
     public DateTime PayedAt { get; private set; } = DateTime.UtcNow;
     public PaymentMethod Method { get; private set; } = PaymentMethod.Wero;
     public Subscription Subscription { get; private set; }
-    public Guid ProcessorId { get; private set; }
+    public ProcessorId ProcessorId { get; private set; }
     public Currency Currency { get; private set; } = Currency.EUR;
 
-    public Payment(Subscription subscription)
+    public Payment(ProcessorId processorId, Subscription subscription)
     {
+        ProcessorId = processorId;
         Subscription = subscription;
         Amount = Subscription.SubscriptionPlan.Price;
         Currency = Subscription.SubscriptionPlan.Currency;
@@ -44,20 +46,5 @@ public class Payment
     public void IsPending()
     {
         Status = PaymentStatus.Pending;
-    }
-
-    public void SetProcessorId(Guid processorId)
-    {
-        if (ProcessorId != Guid.Empty)
-        {
-            throw new PaymentFailedException("Processor ID cannot be overwritten once it's set");
-        }
-
-        if (ProcessorId == Guid.Empty)
-        {
-            throw new PaymentFailedException("Processor ID cannot be empty");
-        }
-
-        ProcessorId = processorId;
     }
 }

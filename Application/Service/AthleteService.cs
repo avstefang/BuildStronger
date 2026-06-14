@@ -49,15 +49,8 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
 
     public async Task<Athlete?> LoginAthleteAsync(EmailAddress email, SecureString password)
     {
-        Athlete athlete;
-        try
-        {
-            athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
-        }
-        catch (AthleteNotFoundException)
-        {
-            return null;
-        }
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
+        if (athlete == null) return null;
 
         string passwordString = _passwordCrypt.SecureToPlain(password);
         bool verifyPassword = _passwordCrypt.VerifyPassword(passwordString, athlete.Password);
@@ -66,11 +59,8 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
 
     public async Task<Athlete?> UpdateAthlete(UpdateAthleteDto updateAthleteDto)
     {
-        Athlete athlete = await _athleteRepository.GetAthleteByEmailAsync(updateAthleteDto.EmailAddress);
-        if (athlete == null)
-        {
-            return null;
-        }
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(updateAthleteDto.EmailAddress);
+        if (athlete == null) return null;
 
         await _athleteRepository.UpdateAthleteAsync(athlete);
         return athlete;
@@ -142,6 +132,23 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         if (athlete == null)
             throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
         athlete.PromoteToInstructor();
+        await _athleteRepository.UpdateAthleteAsync(athlete);
+    }
+
+    public async Task DemoteToUserAsync(EmailAddress email)
+    {
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email) ??
+            throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
+
+        athlete.DemoteToUser();
+        await _athleteRepository.UpdateAthleteAsync(athlete);
+    }
+
+    public async Task UploadProfilePicture(EmailAddress email, string photoPath)
+    {
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email) ??
+            throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
+        athlete.PhotoPath = new PhotoPath(photoPath);
         await _athleteRepository.UpdateAthleteAsync(athlete);
     }
 }
