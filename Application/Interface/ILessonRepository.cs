@@ -14,6 +14,6 @@ public interface ILessonRepository
     Task<IEnumerable<Lesson>?> GetLessonsByInstructorIdAsync(Guid instructorId);
     Task<IEnumerable<Lesson>?> GetAllLessonsAsync();
     Task AddLessonAsync(Lesson lesson);
-    Task UpdateLessonAsync(UpdateLessonDto lessonDto);
+    Task UpdateLessonAsync(Lesson lesson);
     Task DeleteLessonAsync(Guid lessonId);
 }

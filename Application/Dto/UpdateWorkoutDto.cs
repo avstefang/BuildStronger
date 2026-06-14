@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Application.Dto;
 
-public class UpdateWorkoutDto(string name, string description, int durationInMinutes)
+public class UpdateWorkoutDto(string? name = null, string? description = null, int? durationInMinutes = null)
 {
-    public string Name { get; private set; } = name;
-    public string Description { get; private set; } = description;
-    public int DurationInMinutes { get; private set; } = durationInMinutes;
+    public string? Name { get; init; } = name;
+    public string? Description { get; init; } = description;
+    public int? DurationInMinutes { get; init; } = durationInMinutes;
 }

@@ -8,7 +8,7 @@ namespace Infrastructure.Context_model;
 
 public class SubscriptionPlanDbContext(DbContextOptions<SubscriptionPlanDbContext> options) : DbContext(options)
 {
-    public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+    public DbSet<SubscriptionPlan> SubscriptionPlan { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

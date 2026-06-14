@@ -13,6 +13,8 @@ public class Reservation
     public DateTime ReservedAt { get; private set; } = DateTime.Now;
     public EquipmentSpot? EquipmentSpot { get; private set; } = null;
 
+    private Reservation() { }
+
     public Reservation(Athlete athlete, DateTime reservationDate, Lesson lesson)
     {
         if (DateTime.Now.AddDays(7) < reservationDate)

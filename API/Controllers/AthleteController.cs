@@ -19,6 +19,7 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
     /// <summary>
     /// Get athlete by ID (admin or authenticated user only)
     /// </summary>
+    [Authorize]
     [HttpGet("{email}")]
     public async Task<IActionResult> GetAthleteByEmail([FromRoute] string email)
     {
@@ -41,6 +42,7 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
     /// <summary>
     /// Update username
     /// </summary>
+    [Authorize]
     [HttpPut("username")]
     public async Task<IActionResult> UpdateUsername([FromBody] UpdateUsernameDto dto)
     {
@@ -63,6 +65,7 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
     /// <summary>
     /// Get athlete's subscriptions
     /// </summary>
+    [Authorize]
     [HttpGet("{email}/subscriptions")]
     public async Task<IActionResult> GetSubscriptions([FromRoute] string email)
     {
@@ -83,6 +86,7 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("changepassword")]
     public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordDto dto)
     {
@@ -118,6 +122,30 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "Failed to delete athlete", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
+    [Authorize]
+    [HttpGet("{email}/GetSubscriptionStatus")]
+    public async Task<IActionResult> GetSubscriptionStatus([FromRoute] string email)
+    {
+        try
+        {
+            EmailAddress emailAddress = new(email);
+            Subscription? subscription = await athleteService.GetActiveSubscriptionAsync(emailAddress);
+            if (subscription == null)
+            {
+                return NotFound(new { error = "No active subscription found" });
+            }   
+            return Ok(subscription.Status);
+        }
+        catch (AthleteNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to retrieve subscription status", details = ex.InnerException?.Message ?? ex.Message });
         }
     }
 }

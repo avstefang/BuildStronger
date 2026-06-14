@@ -15,6 +15,8 @@ public class Payment
     public ProcessorId ProcessorId { get; private set; }
     public Currency Currency { get; private set; } = Currency.EUR;
 
+    private Payment() { }
+
     public Payment(ProcessorId processorId, Subscription subscription)
     {
         ProcessorId = processorId;

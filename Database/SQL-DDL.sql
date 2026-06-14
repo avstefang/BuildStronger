@@ -95,7 +95,7 @@ CREATE TABLE subscription (
     [status] NVARCHAR(20) NOT NULL CONSTRAINT DF_subscription_status DEFAULT ('Active'),
     CONSTRAINT FK_subscription_athlete FOREIGN KEY (athleteId) REFERENCES athlete(id) ON DELETE SET NULL,
     CONSTRAINT FK_subscription_subscriptionPlan FOREIGN KEY (subscriptionPlanId) REFERENCES subscriptionPlan(id),
-    CONSTRAINT CK_subscription_status CHECK ([status] IN ('Active', 'Cancelled', 'Expired'))
+    CONSTRAINT CK_subscription_status CHECK ([status] IN ('Active', 'Cancelled', 'Expired', 'WaitingActivation', 'Failed'))
 );
 
 CREATE TABLE equipmentRoom (
@@ -125,13 +125,12 @@ CREATE TABLE lesson (
     id UNIQUEIDENTIFIER NOT NULL CONSTRAINT DF_lesson_id DEFAULT (NEWID()) PRIMARY KEY,
     workoutId UNIQUEIDENTIFIER NOT NULL,
     maxCapacity INT NOT NULL,
-    instructorId UNIQUEIDENTIFIER NOT NULL,
+    instructorId UNIQUEIDENTIFIER,
     roomId UNIQUEIDENTIFIER NOT NULL,
     customDuration INT NULL,
     CONSTRAINT FK_lesson_workout FOREIGN KEY (workoutId) REFERENCES workout(id) ON DELETE CASCADE,
     CONSTRAINT FK_lesson_instructor FOREIGN KEY (instructorId) REFERENCES athlete(id),
     CONSTRAINT FK_lesson_room FOREIGN KEY (roomId) REFERENCES room(id),
-    CONSTRAINT CK_lesson_customDuration CHECK (customDuration IS NULL OR customDuration > 0),
     CONSTRAINT CK_lesson_maxCapacity CHECK (maxCapacity > 0)
 );
 

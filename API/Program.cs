@@ -1,6 +1,5 @@
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Application.Interface;
 using Infrastructure.Repository;
@@ -13,27 +12,22 @@ using Infrastructure.Context_model;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<AthleteDbContext>(options =>
-{
-    options.UseSqlServer(connectionString);
-});
-builder.Services.AddDbContext<SubscriptionDbContext>(options =>
-{
-    options.UseSqlServer(connectionString);
-});
-builder.Services.AddDbContext<SubscriptionPlanDbContext>(options =>
-{
-    options.UseSqlServer(connectionString);
-});
 
-// Register DbContext as a service that resolves to DbConnection
+// DbContexts
+builder.Services.AddDbContext<AthleteDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<SubscriptionDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<SubscriptionPlanDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<LessonDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ReservationDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<LocationDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<RoomDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<EquipmentSpotDbContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<PaymentDbContext>(o => o.UseSqlServer(connectionString));
+
 builder.Services.AddScoped<DbContext>(provider => provider.GetRequiredService<AthleteDbContext>());
 
 // JWT Configuration
@@ -63,22 +57,43 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Register Services
+// Repositories
 builder.Services.AddScoped<IAthleteRepository, AthleteRepository>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
-builder.Services.AddScoped<IPaymentProcessor, PaymentProcessor>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
+builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+builder.Services.AddScoped<IEquipmentRoomRepository, EquipmentRoomRepository>();
+builder.Services.AddScoped<IEquipmentSpotRepository, EquipmentSpotRepository>();
 
-builder.Services.AddScoped<AthleteService>();
-builder.Services.AddScoped<SubscriptionService>();
+// Infrastructure
+builder.Services.AddScoped<IPaymentProcessor, PaymentProcessor>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPasswordCrypt, PasswordCrypt>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 
+// Services
+builder.Services.AddScoped<AthleteService>();
+builder.Services.AddScoped<SubscriptionService>();
+builder.Services.AddScoped<WorkoutService>();
+builder.Services.AddScoped<LessonService>();
+builder.Services.AddScoped<ReservationService>();
+builder.Services.AddScoped<LocationService>();
+builder.Services.AddScoped<RoomService>();
+builder.Services.AddScoped<EquipmentService>();
+builder.Services.AddScoped<EquipmentRoomService>();
+
+builder.Services.AddHostedService<ScheduledJobsService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -86,11 +101,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
-

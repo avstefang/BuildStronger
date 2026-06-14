@@ -151,4 +151,11 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         athlete.PhotoPath = new PhotoPath(photoPath);
         await _athleteRepository.UpdateAthleteAsync(athlete);
     }
+
+    public async Task<Subscription?> GetActiveSubscriptionAsync(EmailAddress email)
+    {
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email) ??
+            throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
+        return athlete.GetActiveSubscription();
+    }
 }

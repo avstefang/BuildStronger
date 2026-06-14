@@ -12,6 +12,8 @@ public class Lesson
     public Instructor? Instructor { get; private set; } = null;
     public Room Room { get; private set; } = null!;
 
+    private Lesson() { }
+
     public Lesson(Workout workout, Schedule schedule, int maxCapacity, Room room, int customDuration = 0)
     {
         Workout = workout;

@@ -3,12 +3,21 @@ using System;
 
 namespace Domain.Entity;
 
-public class Schedule(TimeOnly startTime, DayOfWeek startDay, Repetition? repetition = null)
+public class Schedule
 {
+    private Schedule() { }
+
+    public Schedule(TimeOnly startTime, DayOfWeek startDay, Repetition? repetition = null)
+    {
+        StartTime = startTime;
+        StartDay = startDay;
+        Repetition = repetition ?? new(1, null);
+    }
+
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public TimeOnly StartTime { get; private set; } = startTime;
-    public DayOfWeek StartDay { get; private set; } = startDay;
-    public Repetition Repetition { get; private set; } = repetition ?? new(1, null);
+    public TimeOnly StartTime { get; private set; }
+    public DayOfWeek StartDay { get; private set; }
+    public Repetition Repetition { get; private set; } = null!;
     public DateTime RegisteredAt { get; private set; } = DateTime.Now;
 
     public void ChangeStartTime(TimeOnly newStartTime)

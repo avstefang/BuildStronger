@@ -4,12 +4,21 @@ using Domain.Exception;
 
 namespace Domain.Entity;
 
-public class EquipmentSpot(Equipment equipment, EquipmentRoom equipmentRoom, EquipmentPosition equipmentPosition)
+public class EquipmentSpot
 {
+    private EquipmentSpot() { }
+
+    public EquipmentSpot(Equipment equipment, EquipmentRoom equipmentRoom, EquipmentPosition equipmentPosition)
+    {
+        Equipment = equipment;
+        EquipmentRoom = equipmentRoom;
+        EquipmentPosition = equipmentPosition;
+    }
+
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public Equipment Equipment { get; private set; } = equipment;
-    public EquipmentRoom EquipmentRoom { get; private set; } = equipmentRoom;
-    public EquipmentPosition EquipmentPosition { get; private set; } = equipmentPosition;
+    public Equipment Equipment { get; private set; } = null!;
+    public EquipmentRoom EquipmentRoom { get; private set; } = null!;
+    public EquipmentPosition EquipmentPosition { get; private set; } = null!;
 
     public void UpdateRoom(EquipmentRoom newRoom)
     {

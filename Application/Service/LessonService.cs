@@ -8,11 +8,12 @@ using Domain.Value_object;
 
 namespace Application.Service;
 
-public class LessonService(ILessonRepository lessonRepository, IWorkoutRepository workoutRepository, IRoomRepository roomRepository)
+public class LessonService(ILessonRepository lessonRepository, IWorkoutRepository workoutRepository, IRoomRepository roomRepository, IScheduleRepository scheduleRepository)
 {
     private readonly ILessonRepository _lessonRepository = lessonRepository;
     private readonly IWorkoutRepository _workoutRepository = workoutRepository;
     private readonly IRoomRepository _roomRepository = roomRepository;
+    private readonly IScheduleRepository _scheduleRepository = scheduleRepository;
 
     public async Task<Lesson?> CreateLessonAsync(CreateLessonDto dto)
     {
@@ -20,8 +21,10 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
             throw new Exception($"Room with ID {dto.RoomId} not found.");
         Workout? workout = await _workoutRepository.GetWorkoutByIdAsync(dto.WorkoutId) ??
             throw new Exception($"Workout with ID {dto.WorkoutId} not found.");
+        Schedule? schedule = await _scheduleRepository.GetScheduleByIdAsync(dto.ScheduleId) ??
+            throw new Exception($"Schedule with ID {dto.ScheduleId} not found.");
 
-        Lesson lesson = new(workout, dto.Schedule, dto.MaxCapacity, room, dto.CustomDuration);
+        Lesson lesson = new(workout, schedule, dto.MaxCapacity, room, dto.CustomDuration);
         await _lessonRepository.AddLessonAsync(lesson);
         return lesson;
     }
@@ -31,14 +34,18 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
         Lesson? lesson = await _lessonRepository.GetLessonByIdAsync(dto.Id) ??
             throw new Exception($"Lesson with ID {dto.Id} not found.");
 
-        if (dto.Schedule != null)
-            lesson.UpdateSchedule(dto.Schedule);
+        if (dto.ScheduleId != null)
+        {
+            Schedule schedule = await _scheduleRepository.GetScheduleByIdAsync(dto.ScheduleId.Value)
+                ?? throw new Exception($"Schedule with ID {dto.ScheduleId} not found.");
+            lesson.UpdateSchedule(schedule);
+        }
         if (dto.MaxCapacity != null)
             lesson.UpdateMaxCapacity(dto.MaxCapacity.Value);
         if (dto.CustomDuration != null)
             lesson.UpdateCustomDuration(dto.CustomDuration.Value);
 
-        await _lessonRepository.UpdateLessonAsync(dto);
+        await _lessonRepository.UpdateLessonAsync(lesson);
         return lesson;
     }
 

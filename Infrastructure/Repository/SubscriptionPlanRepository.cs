@@ -8,12 +8,9 @@ namespace Infrastructure.Repository;
 
 public class SubscriptionPlanRepository(SubscriptionPlanDbContext dbConnection) : Repository<SubscriptionPlan, Guid>(dbConnection), ISubscriptionPlanRepository
 {
-    public async Task<SubscriptionPlan> GetSubscriptionPlanById(Guid subscriptionPlanId)
+    public async Task<SubscriptionPlan?> GetSubscriptionPlanByIdAsync(Guid subscriptionPlanId)
     {
-        var plan = await GetByIdAsync(subscriptionPlanId);
-        if (plan == null)
-            throw new InvalidOperationException($"Subscription Plan with ID {subscriptionPlanId} not found");
-        return plan;
+        return await GetByIdAsync(subscriptionPlanId);
     }
 
     public async Task<SubscriptionPlan> GetSubscriptionPlanByNameAsync(string name)

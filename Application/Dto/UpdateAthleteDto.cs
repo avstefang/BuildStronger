@@ -7,8 +7,9 @@ using System.Text;
 
 namespace Application.Dto;
 
-public class UpdateAthleteDto(EmailAddress emailAddress, FullName fullName, string username)
+public class UpdateAthleteDto(Guid athleteId, EmailAddress emailAddress, FullName fullName, string username)
 {
+    public Guid AthleteId { get; private set; } = athleteId;
     public EmailAddress EmailAddress { get; private set; } = emailAddress;
     public FullName FullName { get; private set; } = fullName;
     public string Username { get; private set; } = username;

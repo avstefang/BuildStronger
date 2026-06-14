@@ -37,11 +37,14 @@ public class WorkoutService(IWorkoutRepository workoutRepository, IEquipmentRepo
 
     public async Task UpdateWorkoutAsync(Guid id, UpdateWorkoutDto dto)
     {
+        if (dto.Name == null && dto.Description == null && dto.DurationInMinutes == null)
+            throw new Exception("You must provide at least one field to update");
+
         Workout workout = await _workoutRepository.GetWorkoutByIdAsync(id)
             ?? throw new Exception($"Workout with ID {id} not found");
-        workout.UpdateName(dto.Name);
-        workout.UpdateDescription(dto.Description);
-        workout.UpdateDuration(new Duration(dto.DurationInMinutes));
+        if (dto.Name != null) workout.UpdateName(dto.Name);
+        if (dto.Description != null) workout.UpdateDescription(dto.Description);
+        if (dto.DurationInMinutes != null) workout.UpdateDuration(new Duration(dto.DurationInMinutes ?? 0));
         await _workoutRepository.UpdateWorkoutAsync(workout);
     }
 

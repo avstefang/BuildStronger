@@ -15,9 +15,9 @@ public class SubscriptionDbContext(DbContextOptions<SubscriptionDbContext> optio
     {
         modelBuilder.Entity<Subscription>( builder =>
         {
-            builder.HasOne(s => s.SubscriptionPlan).WithMany();
             builder.Property<Guid>("AthleteId").HasColumnName("athleteId");
             builder.Property<Guid>("SubscriptionPlanId").HasColumnName("subscriptionPlanId");
+            builder.HasOne(s => s.SubscriptionPlan).WithMany().HasForeignKey("SubscriptionPlanId");
             builder.Property(s => s.StartDate).HasColumnName("startDate");
             builder.Property(s => s.Status).HasColumnName("status").HasConversion<string>();
             builder.Property(s => s.AutoRenew).HasColumnName("autoRenew");

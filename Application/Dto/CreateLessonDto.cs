@@ -1,16 +1,10 @@
-﻿using Domain.Entity;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Application.Dto;
 
-public class CreateLessonDto(Guid workoutId, Schedule schedule, Guid roomId, int maxCapacity, int customDuration = 0)
+public class CreateLessonDto
 {
-    public Guid WorkoutId { get; private set; } = workoutId;
-    public Schedule Schedule { get; private set; } = schedule;
-    public Guid RoomId { get; private set; } = roomId;
-    public int MaxCapacity { get; private set; } = maxCapacity;
-    public int CustomDuration { get; private set; } = customDuration;
-
+    public Guid WorkoutId { get; set; }
+    public Guid ScheduleId { get; set; }
+    public Guid RoomId { get; set; }
+    public int MaxCapacity { get; set; }
+    public int CustomDuration { get; set; }
 }

@@ -35,12 +35,12 @@ public class ReservationService(ILessonRepository lessonRepository, IReservation
 
         if (lesson.Workout.Equipment.Count > 0)
         {
-            if (dto.EquipmentSpotId == Guid.Empty)
+            if (dto.EquipmentSpotId == null)
             {
                 throw new ReservationException($"Lesson {lesson.Id} requires an equipment spot reservation");
             }
 
-            EquipmentSpot? equipmentSpot = await _equipmentSpotRepository.GetEquipmentSpotByIdAsync(dto.EquipmentSpotId) ??
+            EquipmentSpot? equipmentSpot = await _equipmentSpotRepository.GetEquipmentSpotByIdAsync(dto.EquipmentSpotId ?? Guid.Empty) ??
                 throw new ReservationException($"No equipment spot found with id {dto.EquipmentSpotId}");
             reservation.SetEquipmentSpot(equipmentSpot);
         }

@@ -18,7 +18,7 @@ public class LessonDbContext(DbContextOptions<LessonDbContext> contextOptions) :
             builder.ToTable("lesson");
             builder.Property(l => l.MaxCapacity).HasColumnName("maxCapacity");
             builder.Property(l => l.CustomDuration).HasColumnName("customDuration");
-            builder.Property<Guid>("InstructorId").HasColumnName("instructorId");
+            builder.Property<Guid?>("InstructorId").HasColumnName("instructorId").IsRequired(false);
             builder.Ignore(l => l.Instructor);
             builder.HasOne(l => l.Workout)
                    .WithMany()
@@ -28,7 +28,7 @@ public class LessonDbContext(DbContextOptions<LessonDbContext> contextOptions) :
                    .HasForeignKey("roomId");
             builder.HasOne(l => l.Schedule)
                    .WithOne()
-                   .HasForeignKey<Schedule>("lessonId");
+                   .HasForeignKey<Schedule>("LessonId");
         });
 
         modelBuilder.Entity<Schedule>(builder =>

@@ -14,7 +14,7 @@ public interface ISubscriptionRepository
     Task<IEnumerable<Subscription>?> GetSubscriptionsByAthleteIdAsync(Guid athleteId);
     Task<IEnumerable<Subscription>?> GetAllLatentSubscriptionsAsync();
     Task<Subscription?> GetSubscriptionByAthleteIdAsync(Guid athleteId);
-    Task AddSubscriptionAsync(Subscription subscription);
+    Task AddSubscriptionAsync(Subscription subscription, Guid athleteId);
     Task<SubscriptionStatus> UpdateSubscriptionStatusAsync(Subscription subscription);
     Task DeleteSubscriptionAsync(Guid subscriptionId);
 }

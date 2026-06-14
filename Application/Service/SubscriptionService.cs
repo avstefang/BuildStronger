@@ -32,7 +32,8 @@ public class SubscriptionService(
             throw new InvalidOperationException($"Subscription plan with ID '{dto.SubscriptionPlanId}' not found.");
 
         Subscription? subscription = new(subscriptionPlan, dto.StartDate);
-        Payment? payment = new(dto.ProcessorId, subscription);
+        ProcessorId inputProcessorId = new(dto.ProcessorId);
+        Payment? payment = new(inputProcessorId, subscription);
 
         ProcessorId? processorId = await _paymentProcessor.ProcessPaymentAsync(payment);
         if (processorId != null)
@@ -50,11 +51,10 @@ public class SubscriptionService(
             subscription.FailSubscription();
         }
 
+        await _subscriptionRepository.AddSubscriptionAsync(subscription, athlete.Id);
         await _paymentRepository.CreatePaymentAsync(payment);
-        await _subscriptionRepository.AddSubscriptionAsync(subscription);
 
         athlete.AddSubscription(subscription);
-        await _athleteRepository.UpdateAthleteAsync(athlete);
         return athlete;
     }
 
@@ -77,13 +77,14 @@ public class SubscriptionService(
         Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
             throw new InvalidOperationException($"Athlete with email '{email}' not found.");
 
-        var subscription = athlete.GetLastSubscription();
-        if (subscription != null)
-        {
-            subscription.CancelSubscription();
-            await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
-            await _athleteRepository.UpdateAthleteAsync(athlete);
-        }
+        IEnumerable<Subscription>? subscriptions = await _subscriptionRepository.GetSubscriptionsByAthleteIdAsync(athlete.Id);
+        Subscription subscription = subscriptions?
+            .OrderByDescending(s => s.StartDate)
+            .FirstOrDefault(s => s.Status == Domain.Enum.SubscriptionStatus.Active)
+            ?? throw new InvalidOperationException($"No active subscription found for '{email}'.");
+
+        subscription.CancelSubscription();
+        await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
     }
 
     public async Task ActivateLatentSubscriptionAsync()
