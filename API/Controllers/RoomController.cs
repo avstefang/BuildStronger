@@ -1,5 +1,5 @@
+using Application.Dto;
 using Application.Service;
-using Domain.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +10,13 @@ namespace API.Controllers;
 [Authorize]
 public class RoomController(RoomService roomService) : ControllerBase
 {
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllRooms()
     {
         try
         {
-            IEnumerable<Room>? rooms = await roomService.GetAllRoomsAsync();
+            IEnumerable<GetRoomDto> rooms = await roomService.GetAllRoomsAsync();
             return Ok(rooms);
         }
         catch (Exception ex)
@@ -24,12 +25,13 @@ public class RoomController(RoomService roomService) : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetRoomById([FromRoute] Guid id)
     {
         try
         {
-            Room? room = await roomService.GetRoomByIdAsync(id);
+            GetRoomDto? room = await roomService.GetRoomByIdAsync(id);
             if (room == null) return NotFound(new { error = $"Room {id} not found" });
             return Ok(room);
         }

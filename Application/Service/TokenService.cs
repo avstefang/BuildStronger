@@ -1,12 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Application.Interface;
 using Domain.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Principal;
+using System.Text;
 
 namespace Application.Service;
 
@@ -43,6 +44,35 @@ public class TokenService(IConfiguration configuration) : ITokenService
 
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(token);
+    }
+
+    public bool ValidateToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var validationParameters = GetValidationParameters();
+
+        SecurityToken validatedToken;
+        IPrincipal principal = tokenHandler.ValidateToken(token, validationParameters, out validatedToken);
+        return true;
+    }
+
+    private TokenValidationParameters GetValidationParameters()
+    {
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var secretKey = jwtSettings["SecretKey"];
+        var issuer = jwtSettings["Issuer"];
+        var audience = jwtSettings["Audience"];
+        var expirationMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "60");
+
+        return new TokenValidationParameters()
+        {
+            ValidateLifetime = true, // Because there is no expiration in the generated token
+            ValidateAudience = true, // Because there is no audiance in the generated token
+            ValidateIssuer = true,   // Because there is no issuer in the generated token
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? throw new ArgumentNullException("No JWT secret key configured"))) // The same key as the one that generate the token
+        };
     }
 }
 

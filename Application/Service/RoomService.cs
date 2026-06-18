@@ -1,5 +1,6 @@
-﻿using Application.Interface;
-using Domain.Entity;
+﻿using Application.Dto;
+using Application.Interface;
+using Application.Mapping;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,9 +11,9 @@ public class RoomService(IRoomRepository roomRepository)
 {
     private readonly IRoomRepository _roomRepository = roomRepository;
 
-    public async Task<IEnumerable<Room>?> GetAllRoomsAsync() =>
-        await _roomRepository.GetAllRoomsAsync();
+    public async Task<IEnumerable<GetRoomDto>> GetAllRoomsAsync() =>
+        (await _roomRepository.GetAllRoomsAsync())?.Select(room => room.ToDto()) ?? [];
 
-    public async Task<Room?> GetRoomByIdAsync(Guid id) =>
-        await _roomRepository.GetRoomByIdAsync(id);
+    public async Task<GetRoomDto?> GetRoomByIdAsync(Guid id) =>
+        (await _roomRepository.GetRoomByIdAsync(id))?.ToDto();
 }

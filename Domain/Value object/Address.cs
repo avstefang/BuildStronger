@@ -22,6 +22,9 @@ public sealed record class Address
     public Address(string formatted)
     {
         var parts = formatted.Split('|');
+        if (parts.Length != 4)
+            throw new ArgumentException("Invalid address format. Expected format: 'Street|HouseNumber|City|ZipCode'.");
+
         Street = parts[0];
         HouseNumber = parts[1];
         City = parts[2];

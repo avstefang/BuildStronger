@@ -1,5 +1,6 @@
 using Application.Dto;
 using Application.Interface;
+using Application.Mapping;
 using Application.Service;
 using Domain.Entity;
 using Domain.Value_object;
@@ -48,34 +49,24 @@ public class AuthController(AthleteService athleteService, ITokenService tokenSe
     /// Login with email and password to receive JWT token
     /// </summary>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    public async Task<IActionResult> Login([FromBody] LoginAthleteDto dto)
     {
         try
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var email = new EmailAddress(dto.Email);
-
-            // Convert string to SecureString for password verification
-            var securePassword = new SecureString();
-            foreach (char c in dto.Password)
-                securePassword.AppendChar(c);
-            securePassword.MakeReadOnly();
-
-            Athlete? athlete = await _athleteService.LoginAthleteAsync(email, securePassword);
+            Athlete? athlete = await _athleteService.LoginAthleteAsync(dto);
 
             if (athlete == null)
                 return Unauthorized(new { error = "Invalid email or password" });
 
             var token = _tokenService.GenerateToken(athlete);
 
-            return Ok(new 
-            { 
-                message = "Login successful",
+            return Ok(new LoginResponseDto(
                 token,
-                athlete
-            });
+                athlete.ToDto()
+            ));
         }
         catch (ArgumentException ex)
         {
@@ -84,6 +75,22 @@ public class AuthController(AthleteService athleteService, ITokenService tokenSe
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "Login failed", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
+    [HttpPost("checktoken")]
+    public IActionResult CheckToken([FromBody] string token)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            bool isValid = _tokenService.ValidateToken(token);
+            return Ok(new { isValid });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Token validation failed", details = ex.InnerException?.Message ?? ex.Message });
         }
     }
 

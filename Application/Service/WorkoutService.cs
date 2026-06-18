@@ -1,5 +1,6 @@
 ﻿using Application.Dto;
 using Application.Interface;
+using Application.Mapping;
 using Domain.Entity;
 using Domain.Value_object;
 using System;
@@ -13,11 +14,11 @@ public class WorkoutService(IWorkoutRepository workoutRepository, IEquipmentRepo
     private readonly IWorkoutRepository _workoutRepository = workoutRepository;
     private readonly IEquipmentRepository _equipmentRepository = equipmentRepository;
 
-    public async Task<IEnumerable<Workout>?> GetAllWorkoutsAsync() =>
-        await _workoutRepository.GetAllWorkoutsAsync();
+    public async Task<IEnumerable<GetWorkoutDto>> GetAllWorkoutsAsync() =>
+        (await _workoutRepository.GetAllWorkoutsAsync())?.Select(workout => workout.ToDto()) ?? [];
 
-    public async Task<Workout?> GetWorkoutByIdAsync(Guid id) =>
-        await _workoutRepository.GetWorkoutByIdAsync(id);
+    public async Task<GetWorkoutDto?> GetWorkoutByIdAsync(Guid id) =>
+        (await _workoutRepository.GetWorkoutByIdAsync(id))?.ToDto();
 
     public async Task CreateWorkoutAsync(CreateWorkoutDto dto)
     {

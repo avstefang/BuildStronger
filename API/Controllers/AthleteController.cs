@@ -1,7 +1,6 @@
 using Application.Dto;
 using Application.Interface;
 using Application.Service;
-using Domain.Entity;
 using Domain.Exception;
 using Domain.Value_object;
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +16,47 @@ namespace API.Controllers;
 public class AthleteController(AthleteService athleteService) : ControllerBase
 {
     /// <summary>
+    /// Get all athletes (instructor/administrator only)
+    /// </summary>
+    [Authorize(Roles = "Instructor,Administrator")]
+    [HttpGet]
+    public async Task<IActionResult> GetAllAthletes()
+    {
+        try
+        {
+            IEnumerable<GetAthleteDto> athletes = await athleteService.GetAllAthletesAsync();
+            return Ok(athletes);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to retrieve athletes", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Promote an athlete to instructor (instructor/administrator only)
+    /// </summary>
+    [Authorize(Roles = "Instructor,Administrator")]
+    [HttpPut("{email}/promote")]
+    public async Task<IActionResult> PromoteToInstructor([FromRoute] string email)
+    {
+        try
+        {
+            EmailAddress emailAddress = new(email);
+            await athleteService.PromoteToInstructorAsync(emailAddress);
+            return Ok(new { message = "Athlete promoted to instructor successfully" });
+        }
+        catch (AthleteNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to promote athlete to instructor", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Get athlete by ID (admin or authenticated user only)
     /// </summary>
     [Authorize]
@@ -26,7 +66,7 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         try
         {
             EmailAddress emailAddress = new(email);
-            Athlete? athlete = await athleteService.GetAthleteByEmail(emailAddress);
+            GetAthleteDto? athlete = await athleteService.GetAthleteByEmail(emailAddress);
 
             if (athlete == null)
                 return NotFound(new { error = "Athlete not found" });
@@ -62,30 +102,6 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Get athlete's subscriptions
-    /// </summary>
-    [Authorize]
-    [HttpGet("{email}/subscriptions")]
-    public async Task<IActionResult> GetSubscriptions([FromRoute] string email)
-    {
-        try
-        {
-            EmailAddress emailAddress = new(email);
-            IEnumerable<Subscription>? subscriptions = await athleteService.GetAthleteSubscriptionsAsync(emailAddress);
-            if (subscriptions == null)
-            {
-                return NotFound(new { error = "Athlete not found or no subscriptions" });
-            }
-
-            return Ok(subscriptions);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "Failed to retrieve subscriptions", details = ex.InnerException?.Message ?? ex.Message });
-        }
-    }
-
     [Authorize]
     [HttpPut("changepassword")]
     public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordDto dto)
@@ -105,7 +121,35 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Delete your own account. The target is taken from the authenticated identity,
+    /// so a user can never delete anyone else's account.
+    /// </summary>
     [Authorize]
+    [HttpDelete("me")]
+    public async Task<IActionResult> DeleteOwnAccount()
+    {
+        try
+        {
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            EmailAddress emailAddress = new(email);
+            await athleteService.DeleteAthleteByEmailAsync(emailAddress);
+            return Ok(new { message = "Account deleted successfully" });
+        }
+        catch (AthleteNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to delete account", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Delete any athlete by email (instructor/administrator only).
+    /// </summary>
+    [Authorize(Roles = "Instructor,Administrator")]
     [HttpDelete("{email}")]
     public async Task<IActionResult> DeleteAthlete([FromRoute] string email)
     {
@@ -122,30 +166,6 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { error = "Failed to delete athlete", details = ex.InnerException?.Message ?? ex.Message });
-        }
-    }
-
-    [Authorize]
-    [HttpGet("{email}/GetSubscriptionStatus")]
-    public async Task<IActionResult> GetSubscriptionStatus([FromRoute] string email)
-    {
-        try
-        {
-            EmailAddress emailAddress = new(email);
-            Subscription? subscription = await athleteService.GetActiveSubscriptionAsync(emailAddress);
-            if (subscription == null)
-            {
-                return NotFound(new { error = "No active subscription found" });
-            }   
-            return Ok(subscription.Status);
-        }
-        catch (AthleteNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { error = "Failed to retrieve subscription status", details = ex.InnerException?.Message ?? ex.Message });
         }
     }
 }

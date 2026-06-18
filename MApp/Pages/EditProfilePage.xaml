@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pageModels="clr-namespace:MApp.PageModels"
+             xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
+             x:Class="MApp.Pages.EditProfilePage"
+             x:DataType="pageModels:EditProfilePageModel"
+             Title="Edit profile">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
+
+            <Label Text="Edit profile" Style="{StaticResource Title2}" />
+
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="16">
+                    <sf:SfTextInputLayout Hint="Full name">
+                        <Entry Text="{Binding FullName}" />
+                    </sf:SfTextInputLayout>
+                    <sf:SfTextInputLayout Hint="Email address">
+                        <Entry Keyboard="Email" Text="{Binding Email}" />
+                    </sf:SfTextInputLayout>
+                    <sf:SfTextInputLayout Hint="Username">
+                        <Entry Text="{Binding Username}" />
+                    </sf:SfTextInputLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Save" Command="{Binding SaveCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" />
+            <Button Text="Cancel" Command="{Binding CancelCommand}"
+                    BackgroundColor="Transparent" TextColor="{StaticResource Primary}" BorderColor="{StaticResource Primary}" BorderWidth="1" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

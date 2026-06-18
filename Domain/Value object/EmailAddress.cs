@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using Domain.Exception;
 
 namespace Domain.Value_object;
@@ -19,9 +20,12 @@ public sealed record class EmailAddress
         {
             throw new DomainException("Input is too short to be a valid email address.", nameof(address));
         }
-        else if (!address.Contains('@'))
+
+        string pattern = @"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$";
+        Regex emailRegex = new(pattern, RegexOptions.Compiled);
+        if (!emailRegex.IsMatch(address))
         {
-            throw new DomainException("Email address must contain '@' symbol.", nameof(address));
+            throw new DomainException("Email address is not valid.", nameof(address));
         }
 
         Address = address;

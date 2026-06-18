@@ -1,6 +1,5 @@
 using Application.Dto;
 using Application.Service;
-using Domain.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,12 +10,13 @@ namespace API.Controllers;
 [Authorize]
 public class LessonController(LessonService lessonService) : ControllerBase
 {
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllLessons()
     {
         try
         {
-            IEnumerable<Lesson>? lessons = await lessonService.GetAllLessonsAsync();
+            IEnumerable<GetLessonDto>? lessons = await lessonService.GetAllLessonsAsync();
             return Ok(lessons);
         }
         catch (Exception ex)
@@ -25,12 +25,13 @@ public class LessonController(LessonService lessonService) : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("workout/{workoutId:guid}")]
     public async Task<IActionResult> GetLessonsByWorkout([FromRoute] Guid workoutId)
     {
         try
         {
-            IEnumerable<Lesson>? lessons = await lessonService.GetLessonsByWorkoutIdAsync(workoutId);
+            IEnumerable<GetLessonDto>? lessons = await lessonService.GetLessonsByWorkoutIdAsync(workoutId);
             return Ok(lessons);
         }
         catch (Exception ex)
@@ -39,12 +40,13 @@ public class LessonController(LessonService lessonService) : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("workout/{workoutId:guid}/upcoming")]
     public async Task<IActionResult> GetUpcomingLessonsByWorkout([FromRoute] Guid workoutId)
     {
         try
         {
-            IEnumerable<Lesson>? lessons = await lessonService.GetCurrentOrFutureLessonsByWorkoutIdAsync(workoutId);
+            IEnumerable<GetLessonDto>? lessons = await lessonService.GetCurrentOrFutureLessonsByWorkoutIdAsync(workoutId);
             return Ok(lessons);
         }
         catch (Exception ex)
@@ -53,12 +55,13 @@ public class LessonController(LessonService lessonService) : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("instructor/{instructorId:guid}")]
     public async Task<IActionResult> GetLessonsByInstructor([FromRoute] Guid instructorId)
     {
         try
         {
-            IEnumerable<Lesson>? lessons = await lessonService.GetLessonsByInstructorIdAsync(instructorId);
+            IEnumerable<GetLessonDto>? lessons = await lessonService.GetLessonsByInstructorIdAsync(instructorId);
             return Ok(lessons);
         }
         catch (Exception ex)
@@ -73,7 +76,7 @@ public class LessonController(LessonService lessonService) : ControllerBase
     {
         try
         {
-            Lesson? lesson = await lessonService.CreateLessonAsync(dto);
+            GetLessonDto? lesson = await lessonService.CreateLessonAsync(dto);
             return Created(string.Empty, lesson);
         }
         catch (Exception ex)
@@ -88,7 +91,7 @@ public class LessonController(LessonService lessonService) : ControllerBase
     {
         try
         {
-            Lesson lesson = await lessonService.UpdateLessonAsync(dto);
+            GetLessonDto lesson = await lessonService.UpdateLessonAsync(dto);
             return Ok(lesson);
         }
         catch (Exception ex)

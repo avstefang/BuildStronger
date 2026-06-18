@@ -1,5 +1,6 @@
 ﻿using Application.Dto;
 using Application.Interface;
+using Application.Mapping;
 using Domain.Entity;
 using Domain.Enum;
 using Domain.Exception;
@@ -17,7 +18,7 @@ public class ReservationService(ILessonRepository lessonRepository, IReservation
     private readonly IAthleteRepository _athleteRepository = athleteRepository;
     private readonly IEquipmentSpotRepository _equipmentSpotRepository = equipmentSpotRepository;
 
-    public async Task<Reservation> ReserveLessonAsync(AddReservationDto dto)
+    public async Task<GetReservationDto> ReserveLessonAsync(AddReservationDto dto)
     {
         EmailAddress email = new(dto.Email);
         Athlete athlete = await _athleteRepository.GetAthleteByEmailAsync(email) ??
@@ -46,26 +47,31 @@ public class ReservationService(ILessonRepository lessonRepository, IReservation
         }
 
         await _reservationRepository.AddReservationAsync(reservation);
-        return reservation;
+        return reservation.ToDto();
     }
 
-    public async Task<Reservation> CancelReservationAsync(Guid reservationId)
+    public async Task<GetReservationDto> CancelReservationAsync(Guid reservationId, string email)
     {
         Reservation reservation = await _reservationRepository.GetReservationByIdAsync(reservationId) ??
             throw new ReservationException($"No reservation found with id {reservationId}");
 
-        reservation.Cancel();
+        if (reservation.Athlete.EmailAddress.Address != email)
+        {
+            throw new ReservationException($"Reservation with id {reservationId} does not belong to athlete with email {email}");
+        }
+
+            reservation.Cancel();
         await _reservationRepository.UpdateReservationAsync(reservation);
-        return reservation;
+        return reservation.ToDto();
     }
 
-    public async Task<IEnumerable<Reservation>?> GetLessonReservationsAsync(Guid lessonId) =>
-        await _reservationRepository.GetAllReservationsByLessonIdAsync(lessonId);
+    public async Task<IEnumerable<GetReservationDto>?> GetLessonReservationsAsync(Guid lessonId) =>
+        (await _reservationRepository.GetAllReservationsByLessonIdAsync(lessonId))?.Select(reservation => reservation.ToDto());
 
-    public async Task<IEnumerable<Reservation>?> GetAthleteReservationsAsync(string email)
+    public async Task<IEnumerable<GetReservationDto>?> GetAthleteReservationsAsync(string email)
     {
         EmailAddress emailAddress = new(email);
-        return await _reservationRepository.GetAllReservationsByEmailAsync(emailAddress);
+        return (await _reservationRepository.GetAllReservationsByEmailAsync(emailAddress))?.Select(reservation => reservation.ToDto());
     }
 
     public async Task AutoAcceptWaitlistReservationsAsync()

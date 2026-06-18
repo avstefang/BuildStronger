@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
+using System.Reflection;
 
 namespace MApp
 {
@@ -20,14 +22,6 @@ namespace MApp
     				{
     					handler.PlatformView.SingleSelectionFollowsFocus = false;
     				});
-
-    				Microsoft.Maui.Handlers.ContentViewHandler.Mapper.AppendToMapping(nameof(Pages.Controls.CategoryChart), (handler, view) =>
-    				{
-    					if (view is Pages.Controls.CategoryChart && handler.PlatformView is Microsoft.Maui.Platform.ContentPanel contentPanel)
-    					{
-    						contentPanel.IsTabStop = true;
-    					}
-    				});
 #endif
                 })
                 .ConfigureFonts(fonts =>
@@ -43,18 +37,45 @@ namespace MApp
     		builder.Services.AddLogging(configure => configure.AddDebug());
 #endif
 
-            builder.Services.AddSingleton<ProjectRepository>();
-            builder.Services.AddSingleton<TaskRepository>();
-            builder.Services.AddSingleton<CategoryRepository>();
-            builder.Services.AddSingleton<TagRepository>();
-            builder.Services.AddSingleton<SeedDataService>();
-            builder.Services.AddSingleton<ModalErrorHandler>();
-            builder.Services.AddSingleton<MainPageModel>();
-            builder.Services.AddSingleton<ProjectListPageModel>();
-            builder.Services.AddSingleton<ManageMetaPageModel>();
+            var assembly = Assembly.GetExecutingAssembly();
+            using var stream = assembly.GetManifestResourceStream("MApp.appsettings.json");
+            if (stream is not null)
+            {
+                var config = new ConfigurationBuilder().AddJsonStream(stream).Build();
+                builder.Configuration.AddConfiguration(config);
+            }
 
-            builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
-            builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");
+            builder.Services.AddScoped(typeof(EntityManager<,>));
+
+            builder.Services.AddSingleton<IAuthService, AuthService>();
+
+            builder.Services.AddSingleton<ModalErrorHandler>();
+
+            // Loading (startup page) — routes to home or login based on the stored token
+            builder.Services.AddSingleton<LoadingPageModel>();
+            builder.Services.AddTransient<LoadingPage>();
+
+            // Login
+            builder.Services.AddSingleton<LoginPageModel>();
+            builder.Services.AddTransient<LoginPage>();
+
+            // Pushed routes
+            builder.Services.AddTransientWithShellRoute<RegisterPage, RegisterPageModel>("register");
+            builder.Services.AddTransientWithShellRoute<EditProfilePage, EditProfilePageModel>("editprofile");
+
+            // Tab pages + their view models
+            builder.Services.AddSingleton<HomePageModel>();
+            builder.Services.AddSingleton<PlanningPageModel>();
+            builder.Services.AddSingleton<BookingsPageModel>();
+            builder.Services.AddSingleton<AccountPageModel>();
+
+            builder.Services.AddTransient<HomePage>();
+            builder.Services.AddTransient<PlanningPage>();
+            builder.Services.AddTransient<BookingsPage>();
+            builder.Services.AddTransient<AccountPage>();
+
+            // Detail page reached via Shell route navigation (carries the class id)
+            builder.Services.AddTransientWithShellRoute<BookClassPage, BookClassPageModel>("bookclass");
 
             return builder.Build();
         }

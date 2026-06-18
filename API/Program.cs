@@ -82,6 +82,7 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 // Services
 builder.Services.AddScoped<AthleteService>();
 builder.Services.AddScoped<SubscriptionService>();
+builder.Services.AddScoped<SubscriptionPlanService>();
 builder.Services.AddScoped<WorkoutService>();
 builder.Services.AddScoped<LessonService>();
 builder.Services.AddScoped<ReservationService>();

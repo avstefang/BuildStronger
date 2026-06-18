@@ -1,5 +1,6 @@
 ﻿using Application.Dto;
 using Application.Interface;
+using Application.Mapping;
 using Application.Template;
 using Domain.Entity;
 using Domain.Exception;
@@ -47,13 +48,18 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         return athlete;
     }
 
-    public async Task<Athlete?> LoginAthleteAsync(EmailAddress email, SecureString password)
+    public async Task<Athlete?> LoginAthleteAsync(LoginAthleteDto dto)
     {
-        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
+        EmailAddress? email = null;
+        string? username = null;
+        try { email = new(dto.UsernameOrEmail); }
+        catch { username = dto.UsernameOrEmail; }
+
+        Athlete? athlete = email != null ? await _athleteRepository.GetAthleteByEmailAsync(email) : 
+            await _athleteRepository.GetAthleteByUsernameAsync(username!);
         if (athlete == null) return null;
 
-        string passwordString = _passwordCrypt.SecureToPlain(password);
-        bool verifyPassword = _passwordCrypt.VerifyPassword(passwordString, athlete.Password);
+        bool verifyPassword = _passwordCrypt.VerifyPassword(dto.Password, athlete.Password);
         return verifyPassword ? athlete : null;
     }
 
@@ -66,11 +72,11 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         return athlete;
     }
 
-    public async Task<Athlete?> GetAthleteByEmail(EmailAddress emailAddress)
+    public async Task<GetAthleteDto?> GetAthleteByEmail(EmailAddress emailAddress)
     {
         try
         {
-            return await _athleteRepository.GetAthleteByEmailAsync(emailAddress);
+            return (await _athleteRepository.GetAthleteByEmailAsync(emailAddress))?.ToDto();
         }
         catch (AthleteNotFoundException)
         {
@@ -107,18 +113,18 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         await _athleteRepository.UpdateAthleteAsync(athlete);
     }
 
-    public async Task<IEnumerable<Subscription>?> GetAthleteSubscriptionsAsync(EmailAddress email)
+    public async Task<IEnumerable<GetSubscriptionDto>?> GetAthleteSubscriptionsAsync(EmailAddress email)
     {
         Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
         if (athlete == null)
             throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
         IEnumerable<Subscription>? subscriptions = await subscriptionRepository.GetSubscriptionsByAthleteIdAsync(athlete.Id);
-        return subscriptions;
+        return subscriptions?.Select(subscription => subscription.ToDto());
     }
 
-    public async Task<IEnumerable<Athlete>> GetAllAthletesAsync()
+    public async Task<IEnumerable<GetAthleteDto>> GetAllAthletesAsync()
     {
-        return await _athleteRepository.GetAllAthletesAsync();
+        return (await _athleteRepository.GetAllAthletesAsync()).Select(athlete => athlete.ToDto());
     }
 
     public async Task DeleteAthleteByEmailAsync(EmailAddress email)

@@ -1,6 +1,5 @@
 using Application.Dto;
 using Application.Service;
-using Domain.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,12 +10,13 @@ namespace API.Controllers;
 [Authorize]
 public class WorkoutController(WorkoutService workoutService) : ControllerBase
 {
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllWorkouts()
     {
         try
         {
-            IEnumerable<Workout>? workouts = await workoutService.GetAllWorkoutsAsync();
+            IEnumerable<GetWorkoutDto> workouts = await workoutService.GetAllWorkoutsAsync();
             return Ok(workouts);
         }
         catch (Exception ex)
@@ -25,12 +25,13 @@ public class WorkoutController(WorkoutService workoutService) : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetWorkoutById([FromRoute] Guid id)
     {
         try
         {
-            Workout? workout = await workoutService.GetWorkoutByIdAsync(id);
+            GetWorkoutDto? workout = await workoutService.GetWorkoutByIdAsync(id);
             if (workout == null) return NotFound(new { error = $"Workout {id} not found" });
             return Ok(workout);
         }

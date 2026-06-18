@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Application.Dto;
 
-public class LoginAthleteDto(string email, string password)
+public class LoginAthleteDto(string usernameOrEmail, string password)
 {
-    public string Email { get; private set; } = email;
+    public string UsernameOrEmail { get; private set; } = usernameOrEmail;
     public string Password { get; private set; } = password;
 }

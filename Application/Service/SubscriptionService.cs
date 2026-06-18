@@ -1,6 +1,8 @@
 ﻿using Application.Dto;
 using Application.Interface;
+using Application.Mapping;
 using Domain.Entity;
+using Domain.Exception;
 using Domain.Value_object;
 using System;
 using System.Collections.Generic;
@@ -22,11 +24,19 @@ public class SubscriptionService(
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IPaymentProcessor _paymentProcessor = paymentProcessor;
 
-    public async Task<Athlete> RegisterSubscriptionAsync(AddSubscriptionDto dto)
+    public async Task<IEnumerable<GetSubscriptionDto>> GetAthleteSubscriptionsAsync(EmailAddress emailAddress)
     {
-        EmailAddress? emailAddress = new(dto.Email);
         Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
-            throw new InvalidOperationException($"Athlete with email '{dto.Email}' not found.");
+            throw new AthleteNotFoundException($"Athlete with email '{emailAddress}' not found.");
+
+        return athlete.Subscriptions.Select(s => s.ToDto());
+    }
+
+    public async Task<GetAthleteDto> RegisterSubscriptionAsync(AddSubscriptionDto dto, string email)
+    {
+        EmailAddress? emailAddress = new(email);
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
+            throw new InvalidOperationException($"Athlete with email '{email}' not found.");
 
         SubscriptionPlan? subscriptionPlan = await _subscriptionPlanRepository.GetSubscriptionPlanByIdAsync(dto.SubscriptionPlanId) ??
             throw new InvalidOperationException($"Subscription plan with ID '{dto.SubscriptionPlanId}' not found.");
@@ -55,20 +65,20 @@ public class SubscriptionService(
         await _paymentRepository.CreatePaymentAsync(payment);
 
         athlete.AddSubscription(subscription);
-        return athlete;
+        return athlete.ToDto();
     }
 
-    public async Task<Athlete> ChangeSubscriptionAsync(AddSubscriptionDto dto)
+    public async Task<GetAthleteDto> ChangeSubscriptionAsync(AddSubscriptionDto dto, string email)
     {
-        EmailAddress? emailAddress = new(dto.Email);
+        EmailAddress? emailAddress = new(email);
         Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
-            throw new InvalidOperationException($"Athlete with email '{dto.Email}' not found.");
+            throw new InvalidOperationException($"Athlete with email '{email}' not found.");
 
         Subscription? activeSubscription = athlete.GetActiveSubscription();
         DateOnly startDate = activeSubscription != null ? activeSubscription.GetEndDate().AddDays(1) : dto.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
 
         dto.ChangeStartDate(startDate);
-        return await RegisterSubscriptionAsync(dto);
+        return await RegisterSubscriptionAsync(dto, email);
     }
 
     public async Task CancelSubscriptionAsync(string email)

@@ -1,8 +1,8 @@
 using Application.Dto;
 using Application.Service;
-using Domain.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers;
 
@@ -17,7 +17,7 @@ public class ReservationController(ReservationService reservationService) : Cont
     {
         try
         {
-            IEnumerable<Reservation>? reservations = await reservationService.GetLessonReservationsAsync(lessonId);
+            IEnumerable<GetReservationDto>? reservations = await reservationService.GetLessonReservationsAsync(lessonId);
             return Ok(reservations);
         }
         catch (Exception ex)
@@ -26,12 +26,14 @@ public class ReservationController(ReservationService reservationService) : Cont
         }
     }
 
-    [HttpGet("athlete/{email}")]
-    public async Task<IActionResult> GetAthleteReservations([FromRoute] string email)
+    [Authorize]
+    [HttpGet("athlete")]
+    public async Task<IActionResult> GetAthleteReservations()
     {
         try
         {
-            IEnumerable<Reservation>? reservations = await reservationService.GetAthleteReservationsAsync(email);
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            IEnumerable<GetReservationDto>? reservations = await reservationService.GetAthleteReservationsAsync(email);
             return Ok(reservations);
         }
         catch (Exception ex)
@@ -40,12 +42,13 @@ public class ReservationController(ReservationService reservationService) : Cont
         }
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> ReserveLesson([FromBody] AddReservationDto dto)
     {
         try
         {
-            Reservation reservation = await reservationService.ReserveLessonAsync(dto);
+            GetReservationDto reservation = await reservationService.ReserveLessonAsync(dto);
             return Created(string.Empty, reservation);
         }
         catch (Exception ex)
@@ -54,12 +57,14 @@ public class ReservationController(ReservationService reservationService) : Cont
         }
     }
 
+    [Authorize]
     [HttpPut("{reservationId:guid}/cancel")]
     public async Task<IActionResult> CancelReservation([FromRoute] Guid reservationId)
     {
         try
         {
-            Reservation reservation = await reservationService.CancelReservationAsync(reservationId);
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            GetReservationDto reservation = await reservationService.CancelReservationAsync(reservationId, email);
             return Ok(reservation);
         }
         catch (Exception ex)
