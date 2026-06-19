@@ -6,30 +6,30 @@
              x:Class="MApp.Pages.LoginPage"
              x:DataType="pageModels:LoginPageModel"
              Shell.NavBarIsVisible="False"
-             Title="Login">
+             Title="Inloggen">
 
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="{StaticResource LayoutSpacing}" VerticalOptions="Center">
 
             <!-- Wordmark -->
             <Label Text="BuildStronger" Style="{StaticResource Title1}" TextColor="{StaticResource Primary}" HorizontalTextAlignment="Center" />
-            <Label Text="Log in to book your classes" Style="{StaticResource Body2}" TextColor="{StaticResource Gray500}"
+            <Label Text="Log in om je lessen te boeken" Style="{StaticResource Body2}" TextColor="{StaticResource Gray500}"
                    HorizontalTextAlignment="Center" Margin="0,0,0,12" />
 
             <!-- Login card -->
             <Border Style="{StaticResource CardStyle}">
                 <VerticalStackLayout Spacing="16">
-                    <sf:SfTextInputLayout Hint="Email address or username">
+                    <sf:SfTextInputLayout Hint="E-mailadres of gebruikersnaam">
                         <Entry Keyboard="Email" Text="{Binding Email}" />
                     </sf:SfTextInputLayout>
-                    <sf:SfTextInputLayout Hint="Password">
+                    <sf:SfTextInputLayout Hint="Wachtwoord">
                         <Entry IsPassword="True" Text="{Binding Password}" />
                     </sf:SfTextInputLayout>
 
                     <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Error}"
                            IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
 
-                    <Button Text="Log in" Command="{Binding LoginCommand}"
+                    <Button Text="Inloggen" Command="{Binding LoginCommand}"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
                     <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
                 </VerticalStackLayout>
@@ -37,8 +37,8 @@
 
             <!-- Sign up -->
             <HorizontalStackLayout Spacing="4" HorizontalOptions="Center" Margin="0,8,0,0">
-                <Label Text="New here?" Style="{StaticResource Body2}" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
-                <Button Text="Join now" Command="{Binding GoToRegisterCommand}"
+                <Label Text="Nieuw hier?" Style="{StaticResource Body2}" TextColor="{StaticResource Gray500}" VerticalOptions="Center" />
+                <Button Text="Word lid" Command="{Binding GoToRegisterCommand}"
                         BackgroundColor="Transparent" TextColor="{StaticResource Primary}" Padding="4,0" />
             </HorizontalStackLayout>
 

@@ -12,7 +12,7 @@ public static class LessonMapping
         Schedule = lesson.Schedule.ToDto(),
         Room = lesson.Room.ToDto(),
         Instructor = lesson.Instructor?.Athlete.ToSummaryDto(),
-        CustomDuration = lesson.CustomDuration,
+        CustomDuration = lesson.CustomDuration ?? 0,
         MaxCapacity = lesson.MaxCapacity,
         EndTime = lesson.GetEndTime()
     };

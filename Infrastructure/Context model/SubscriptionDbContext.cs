@@ -1,4 +1,5 @@
 ﻿using Domain.Entity;
+using Infrastructure.Conversion;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,8 @@ public class SubscriptionDbContext(DbContextOptions<SubscriptionDbContext> optio
             builder.Property(sp => sp.Price).HasColumnName("price");
             builder.Property(sp => sp.DurationInMonths).HasColumnName("durationInMonths");
             builder.Property(sp => sp.MonthlyCreditAmount).HasColumnName("monthlyCreditAmount");
-            builder.Property(sp => sp.PaymentMethod).HasColumnName("paymentMethod").HasConversion<string>();
+            builder.Property(sp => sp.PaymentMethods).HasColumnName("paymentMethod")
+                   .HasConversion(PaymentMethodConversion.Converter, PaymentMethodConversion.Comparer);
             builder.Property(sp => sp.Currency).HasColumnName("paymentCurrency").HasConversion<string>();
         });
     }

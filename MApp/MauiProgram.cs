@@ -49,6 +49,9 @@ namespace MApp
 
             builder.Services.AddSingleton<IAuthService, AuthService>();
 
+            // On-device SQLite cache (subscription plans, etc.)
+            builder.Services.AddSingleton<LocalDbService>();
+
             builder.Services.AddSingleton<ModalErrorHandler>();
 
             // Loading (startup page) — routes to home or login based on the stored token
@@ -61,6 +64,10 @@ namespace MApp
 
             // Pushed routes
             builder.Services.AddTransientWithShellRoute<RegisterPage, RegisterPageModel>("register");
+            builder.Services.AddTransientWithShellRoute<PaymentPage, PaymentPageModel>("payment");
+            builder.Services.AddTransientWithShellRoute<AddSubscriptionPage, AddSubscriptionPageModel>("addsubscription");
+            builder.Services.AddTransientWithShellRoute<ChangeSubscriptionPage, ChangeSubscriptionPageModel>("changesubscription");
+            builder.Services.AddTransientWithShellRoute<ChangeSubscriptionPage, ChangeSubscriptionPageModel>("changesubscription");
             builder.Services.AddTransientWithShellRoute<EditProfilePage, EditProfilePageModel>("editprofile");
 
             // Tab pages + their view models

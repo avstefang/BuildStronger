@@ -1,42 +1,60 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MApp.Models;
+using Brand.Theme;
 
 namespace MApp.PageModels;
 
 public partial class AccountPageModel : ObservableObject
 {
+    private IAuthService _authService;
+    private LocalDbService _localDb;
+
     [ObservableProperty]
     private MemberProfile _profile = new();
 
-    public AccountPageModel()
+    [ObservableProperty]
+    private bool _hasSubscription;
+
+    [ObservableProperty]
+    private string _color = BrandColors.Success;
+
+    public AccountPageModel(IAuthService authService, LocalDbService localDb)
     {
-        LoadMockData();
+        _authService = authService;
+        _localDb = localDb;
     }
 
     [RelayCommand]
     private Task EditProfile() => Shell.Current.GoToAsync("editprofile");
 
     [RelayCommand]
+    private Task AddSubscription() => Shell.Current.GoToAsync("addsubscription");
+
+    [RelayCommand]
+    private Task ChangeSubscription() => Shell.Current.GoToAsync("changesubscription");
+
+    [RelayCommand]
     private Task Logout()
     {
-        // TODO: clear the stored token/session.
-        // Absolute route resets the stack so Back cannot return into the app.
+        _authService.Logout();
         return Shell.Current.GoToAsync("//login");
     }
 
-    private void LoadMockData()
+    /// <summary>Loads the signed-in member from the local cache. Awaited from the page's OnAppearing.</summary>
+    public async Task LoadProfileAsync()
     {
-        // TODO: replace mock data with the logged-in member's profile from the API.
-        Profile = new MemberProfile
+        MemberProfile? athlete = await _localDb.GetAthleteAsync();
+        Profile = athlete ?? new MemberProfile();
+        HasSubscription = Profile.Status != "Geen actief abonnement";
+
+        Color = Profile.Status switch
         {
-            FullName = "Anna de Vries",
-            Email = "anna@example.com",
-            Username = "anna_dv",
-            PlanName = "Unlimited — monthly",
-            Status = "Active",
-            StartDate = DateTime.Today.AddMonths(-3),
-            EndDate = DateTime.Today.AddMonths(1),
+            "Failed" => BrandColors.Error,
+            "WaitingActivation" => BrandColors.Warning,
+            "Expired" => BrandColors.Attention,
+            "Cancelled" => BrandColors.Warning,
+            _ => BrandColors.Success
         };
     }
 }

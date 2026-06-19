@@ -1,23 +1,23 @@
 @page "/staff/schedule"
 @layout StaffLayout
 
-<PageTitle>Schedule — BuildStronger Staff</PageTitle>
+<PageTitle>Rooster — BuildStronger Medewerkers</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Lesson Schedule</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Lesrooster</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog" Class="mb-4">
-    Add Lesson
+    Les toevoegen
 </MudButton>
 
 <MudTable Items="_lessons" Hover="true" Striped="true" Bordered="true">
     <HeaderContent>
         <MudTh>Workout</MudTh>
-        <MudTh>Day</MudTh>
-        <MudTh>Start time</MudTh>
-        <MudTh>Duration (min)</MudTh>
-        <MudTh>Instructor</MudTh>
-        <MudTh>Recurrence</MudTh>
-        <MudTh>Actions</MudTh>
+        <MudTh>Dag</MudTh>
+        <MudTh>Starttijd</MudTh>
+        <MudTh>Duur (min)</MudTh>
+        <MudTh>Instructeur</MudTh>
+        <MudTh>Herhaling</MudTh>
+        <MudTh>Acties</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.Workout</MudTd>
@@ -34,7 +34,7 @@
 </MudTable>
 
 <MudDialog @bind-Visible="_dialogOpen" Options="@(new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true })">
-    <TitleContent>@(_editTarget == null ? "Add Lesson" : "Edit Lesson")</TitleContent>
+    <TitleContent>@(_editTarget == null ? "Les toevoegen" : "Les bewerken")</TitleContent>
     <DialogContent>
         <MudGrid>
             <MudItem xs="12" sm="6">
@@ -50,60 +50,60 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect @bind-Value="_form.Instructor" Label="Instructor" Variant="Variant.Outlined">
-                    <MudSelectItem Value="@("TBD")">TBD</MudSelectItem>
+                <MudSelect @bind-Value="_form.Instructor" Label="Instructeur" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Nog onbekend")">Nog onbekend</MudSelectItem>
                     <MudSelectItem Value="@("Lisa van der Berg")">Lisa van der Berg</MudSelectItem>
                     <MudSelectItem Value="@("Mark Jansen")">Mark Jansen</MudSelectItem>
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudSelect @bind-Value="_form.Day" Label="Day" Variant="Variant.Outlined">
-                    @foreach (var day in new[] { "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday" })
+                <MudSelect @bind-Value="_form.Day" Label="Dag" Variant="Variant.Outlined">
+                    @foreach (var day in new[] { "Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag" })
                     {
                         <MudSelectItem Value="@day">@day</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudTimePicker @bind-Time="_form.StartTime" Label="Start time" Variant="Variant.Outlined" />
+                <MudTimePicker @bind-Time="_form.StartTime" Label="Starttijd" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duration (min)" Variant="Variant.Outlined" Min="1" />
+                <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duur (min)" Variant="Variant.Outlined" Min="1" />
             </MudItem>
             <MudItem xs="12">
-                <MudSelect @bind-Value="_form.RecurrenceType" Label="Recurrence" Variant="Variant.Outlined">
-                    <MudSelectItem Value="@("Once")">Once</MudSelectItem>
-                    <MudSelectItem Value="@("Daily")">Daily</MudSelectItem>
-                    <MudSelectItem Value="@("Weekly")">Weekly</MudSelectItem>
-                    <MudSelectItem Value="@("Monthly")">Monthly</MudSelectItem>
+                <MudSelect @bind-Value="_form.RecurrenceType" Label="Herhaling" Variant="Variant.Outlined">
+                    <MudSelectItem Value="@("Eenmalig")">Eenmalig</MudSelectItem>
+                    <MudSelectItem Value="@("Dagelijks")">Dagelijks</MudSelectItem>
+                    <MudSelectItem Value="@("Wekelijks")">Wekelijks</MudSelectItem>
+                    <MudSelectItem Value="@("Maandelijks")">Maandelijks</MudSelectItem>
                 </MudSelect>
             </MudItem>
-            @if (_form.RecurrenceType != "Once")
+            @if (_form.RecurrenceType != "Eenmalig")
             {
                 <MudItem xs="12" sm="6">
-                    <MudSelect @bind-Value="_form.RecurrenceEnd" Label="End by" Variant="Variant.Outlined">
-                        <MudSelectItem Value="@("EndDate")">End date</MudSelectItem>
-                        <MudSelectItem Value="@("Count")">Number of repetitions</MudSelectItem>
+                    <MudSelect @bind-Value="_form.RecurrenceEnd" Label="Einde" Variant="Variant.Outlined">
+                        <MudSelectItem Value="@("EndDate")">Einddatum</MudSelectItem>
+                        <MudSelectItem Value="@("Count")">Aantal herhalingen</MudSelectItem>
                     </MudSelect>
                 </MudItem>
                 @if (_form.RecurrenceEnd == "EndDate")
                 {
                     <MudItem xs="12" sm="6">
-                        <MudDatePicker @bind-Date="_form.EndDate" Label="End date" Variant="Variant.Outlined" MinDate="DateTime.Today" />
+                        <MudDatePicker @bind-Date="_form.EndDate" Label="Einddatum" Variant="Variant.Outlined" MinDate="DateTime.Today" />
                     </MudItem>
                 }
                 else
                 {
                     <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_form.RepetitionCount" Label="Number of repetitions" Variant="Variant.Outlined" Min="1" />
+                        <MudNumericField @bind-Value="_form.RepetitionCount" Label="Aantal herhalingen" Variant="Variant.Outlined" Min="1" />
                     </MudItem>
                 }
             }
         </MudGrid>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLesson">Save</MudButton>
+        <MudButton OnClick="() => _dialogOpen = false">Annuleren</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLesson">Opslaan</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -112,9 +112,9 @@
 
     private List<LessonItem> _lessons =
     [
-        new("1", "Spinning", "Monday", "07:00", 45, "Lisa van der Berg", "Weekly"),
-        new("2", "Yoga", "Wednesday", "09:00", 60, "Mark Jansen", "Weekly"),
-        new("3", "Bootcamp", "Saturday", "10:00", 50, "TBD", "Once"),
+        new("1", "Spinning", "Maandag", "07:00", 45, "Lisa van der Berg", "Wekelijks"),
+        new("2", "Yoga", "Woensdag", "09:00", 60, "Mark Jansen", "Wekelijks"),
+        new("3", "Bootcamp", "Zaterdag", "10:00", 50, "Nog onbekend", "Eenmalig"),
     ];
 
     private bool _dialogOpen = false;
@@ -124,11 +124,11 @@
     private class LessonFormModel
     {
         public string Workout { get; set; } = "Spinning";
-        public string Instructor { get; set; } = "TBD";
-        public string Day { get; set; } = "Monday";
+        public string Instructor { get; set; } = "Nog onbekend";
+        public string Day { get; set; } = "Maandag";
         public TimeSpan? StartTime { get; set; } = new TimeSpan(9, 0, 0);
         public int DurationMinutes { get; set; } = 45;
-        public string RecurrenceType { get; set; } = "Once";
+        public string RecurrenceType { get; set; } = "Eenmalig";
         public string RecurrenceEnd { get; set; } = "EndDate";
         public DateTime? EndDate { get; set; }
         public int RepetitionCount { get; set; } = 1;

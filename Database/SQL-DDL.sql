@@ -77,12 +77,11 @@ CREATE TABLE subscriptionPlan (
     price DECIMAL(10,2) NOT NULL,
     durationInMonths INT NOT NULL,
     monthlyCreditAmount INT NOT NULL,
-    paymentMethod NVARCHAR(20) NOT NULL CONSTRAINT DF_subscriptionPlan_paymentMethod DEFAULT ('Wero'),
+    paymentMethod NVARCHAR(200) NOT NULL CONSTRAINT DF_subscriptionPlan_paymentMethod DEFAULT ('Wero'),
     paymentCurrency NVARCHAR(10) NOT NULL CONSTRAINT DF_subscriptionPlan_paymentCurrency DEFAULT ('eur'),
     CONSTRAINT CK_subscriptionPlan_price CHECK (price >= 0),
     CONSTRAINT CK_subscriptionPlan_durationInMonths CHECK (durationInMonths > 0),
     CONSTRAINT CK_subscriptionPlan_monthlyCreditAmount CHECK (monthlyCreditAmount >= 0),
-    CONSTRAINT CK_subscriptionPlan_paymentMethod CHECK (paymentMethod IN ('Wero')),
     CONSTRAINT CK_subscriptionPlan_paymentCurrency CHECK (paymentCurrency IN ('eur'))
 );
 

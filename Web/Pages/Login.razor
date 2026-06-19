@@ -1,14 +1,14 @@
 @page "/login"
 
-<PageTitle>Staff Login — BuildStronger</PageTitle>
+<PageTitle>Medewerker login — BuildStronger</PageTitle>
 
 <MudGrid Justify="Justify.Center">
     <MudItem xs="12" sm="8" md="4">
-        <MudText Typo="Typo.h4" GutterBottom="true" Align="Align.Center">Staff Login</MudText>
+        <MudText Typo="Typo.h4" GutterBottom="true" Align="Align.Center">Medewerker login</MudText>
         <MudCard>
             <MudCardContent>
-                <MudTextField @bind-Value="_email" Label="Email address" InputType="InputType.Email" Variant="Variant.Outlined" Class="mb-3" />
-                <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_email" Label="E-mailadres" InputType="InputType.Email" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_password" Label="Wachtwoord" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-3" />
 
                 @if (_errorMessage != null)
                 {
@@ -18,7 +18,7 @@
             <MudCardActions Class="px-4 pb-4">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="Submit" Disabled="_loading">
                     @if (_loading) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
-                    Login
+                    Inloggen
                 </MudButton>
             </MudCardActions>
         </MudCard>
@@ -38,7 +38,7 @@
 
         // TODO: call API login endpoint and store JWT token
         await Task.Delay(500);
-        _errorMessage = "Login not yet connected to API.";
+        _errorMessage = "Inloggen is nog niet gekoppeld aan de API.";
 
         _loading = false;
     }

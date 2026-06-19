@@ -1,6 +1,8 @@
 using Application.Dto;
 using Application.Interface;
+using Application.Mapping;
 using Application.Service;
+using Domain.Entity;
 using Domain.Exception;
 using Domain.Value_object;
 using Microsoft.AspNetCore.Authorization;
@@ -79,6 +81,32 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         }
     }
 
+    [Authorize]
+    [HttpPut]
+    public async Task<IActionResult> UpdateAthlete([FromBody] UpdateAthleteDto dto)
+    {
+        try
+        {
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            if (email != dto.EmailAddress)
+            {
+                return Forbid("You can only update your own profile.");
+            }
+
+            Athlete? athlete = await athleteService.UpdateAthleteAsync(dto);
+            GetAthleteDto? getAthleteDto = athlete?.ToDto();
+            return Ok(getAthleteDto);
+        }
+        catch (AthleteNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to update athlete", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
     /// <summary>
     /// Update username
     /// </summary>
@@ -88,6 +116,12 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
     {
         try
         {
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            if (email != dto.Email)
+            {
+                return Forbid("You can only update your own username.");
+            }
+
             await athleteService.UpdateUsernameAsync(dto);
 
             return Ok(new { message = "Username updated successfully" });
@@ -108,6 +142,12 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
     {
         try
         {
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            if (email != dto.Email)
+            {
+                return Forbid("You can only change your own password.");
+            }
+
             await athleteService.UpdateAthletePasswordAsync(dto);
             return Ok(new { message = "Password updated successfully" });
         }

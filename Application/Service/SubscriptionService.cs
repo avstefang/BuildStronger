@@ -2,6 +2,7 @@
 using Application.Interface;
 using Application.Mapping;
 using Domain.Entity;
+using Domain.Enum;
 using Domain.Exception;
 using Domain.Value_object;
 using System;
@@ -29,7 +30,7 @@ public class SubscriptionService(
         Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
             throw new AthleteNotFoundException($"Athlete with email '{emailAddress}' not found.");
 
-        return athlete.Subscriptions.Select(s => s.ToDto());
+        return athlete.Subscriptions.OrderByDescending(s => s.StartDate).Select(s => s.ToDto());
     }
 
     public async Task<GetAthleteDto> RegisterSubscriptionAsync(AddSubscriptionDto dto, string email)
@@ -41,9 +42,11 @@ public class SubscriptionService(
         SubscriptionPlan? subscriptionPlan = await _subscriptionPlanRepository.GetSubscriptionPlanByIdAsync(dto.SubscriptionPlanId) ??
             throw new InvalidOperationException($"Subscription plan with ID '{dto.SubscriptionPlanId}' not found.");
 
+        PaymentMethod paymentMethod = Enum.Parse<PaymentMethod>(dto.PaymentMethod);
+
         Subscription? subscription = new(subscriptionPlan, dto.StartDate);
         ProcessorId inputProcessorId = new(dto.ProcessorId);
-        Payment? payment = new(inputProcessorId, subscription);
+        Payment? payment = new(inputProcessorId, subscription, paymentMethod);
 
         ProcessorId? processorId = await _paymentProcessor.ProcessPaymentAsync(payment);
         if (processorId != null)
@@ -105,5 +108,43 @@ public class SubscriptionService(
             subscription.ActivateSubscription();
             await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
         }
+    }
+
+    public async Task SetAutoRenewAsync(string email, bool enable)
+    {
+        EmailAddress emailAddress = new(email);
+        Athlete athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
+            throw new InvalidOperationException($"Athlete with email '{email}' not found.");
+
+        IEnumerable<Subscription>? subscriptions = await _subscriptionRepository.GetSubscriptionsByAthleteIdAsync(athlete.Id);
+        Subscription subscription = subscriptions?.OrderByDescending(s => s.StartDate).FirstOrDefault() ??
+            throw new InvalidOperationException($"No subscription found for '{email}'.");
+
+        if (enable)
+            subscription.EnableAutoRenewal();
+        else
+            subscription.DisableAutoRenewal();
+
+        await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
+    }
+
+    public async Task ActivateSubscriptionAsync(string email)
+    {
+        EmailAddress? emailAddress = new(email);
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(emailAddress) ??
+            throw new InvalidOperationException($"Athlete with email '{email}' not found.");
+        IEnumerable<Subscription>? subscriptions = await _subscriptionRepository.GetSubscriptionsByAthleteIdAsync(athlete.Id);
+        Subscription? subscription = (subscriptions?.OrderByDescending(s => s.StartDate).FirstOrDefault()) ??
+            throw new InvalidOperationException($"No active subscription found for '{email}'.");
+
+        if (subscription.Status == SubscriptionStatus.Active)
+            return;
+
+        // Still in the future → can't activate yet. (Today or earlier is allowed.)
+        if (subscription.Status == SubscriptionStatus.WaitingActivation && subscription.StartDate > DateOnly.FromDateTime(DateTime.Now))
+            throw new SubscriptionStartDateNotPassedException($"Subscription for '{email}' cannot yet be activated.");
+
+        subscription.ActivateSubscription();
+        await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
     }
 }

@@ -31,9 +31,10 @@ public class AuthController(AthleteService athleteService, ITokenService tokenSe
 
         try
         {
-            await _athleteService.RegisterAthleteAsync(athleteDto);
+            Athlete? athlete = await _athleteService.RegisterAthleteAsync(athleteDto);
+            GetAthleteDto registeredAthlete = athlete?.ToDto() ?? throw new InvalidOperationException("Failed to create athlete");
 
-            return Ok(new { message = "Athlete registered successfully", emailAddress = athleteDto.Email });
+            return Ok(registeredAthlete);
         }
         catch (ArgumentException ex)
         {

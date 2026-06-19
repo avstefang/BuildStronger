@@ -31,7 +31,7 @@ public class EntityManager<T, Request>(IConfiguration config) where T : class
             return JsonSerializer.Deserialize<IEnumerable<T>>(json, JsonOptions);
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
             return default;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
@@ -48,7 +48,7 @@ public class EntityManager<T, Request>(IConfiguration config) where T : class
             return JsonSerializer.Deserialize<IEnumerable<T>>(json, JsonOptions);
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
             return default;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
@@ -66,7 +66,7 @@ public class EntityManager<T, Request>(IConfiguration config) where T : class
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
             return default;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
@@ -83,7 +83,7 @@ public class EntityManager<T, Request>(IConfiguration config) where T : class
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
             return default;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
@@ -98,10 +98,11 @@ public class EntityManager<T, Request>(IConfiguration config) where T : class
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
-        else
-        {
-            throw new Exception($"Failed to retrieve entity from {endpoint}/{id}. Status code: {response?.StatusCode}");
-        }
+
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
+            return default;
+
+        throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
     }
 
     public async Task<T?> GetEntityByEmailOrUsernameAsync(string endpoint, Request model, string emailOrUsername)
@@ -114,16 +115,17 @@ public class EntityManager<T, Request>(IConfiguration config) where T : class
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
             return default;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
     }
 
-    public async Task<T?> CreateEntityAsync(string endpoint, Request model, T entity)
+    public async Task<T?> CreateEntityAsync(string endpoint, string token, Request model)
     {
         using var httpClient = new HttpClient();
-        var jsonContent = new StringContent(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var jsonContent = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
         var response = await httpClient.PostAsync($"{connectionString}/{endpoint}", jsonContent);
         if (response != null && response.IsSuccessStatusCode)
         {
@@ -131,40 +133,76 @@ public class EntityManager<T, Request>(IConfiguration config) where T : class
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
             return default;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
     }
 
-    public async Task<T?> UpdateEntityAsync(string endpoint, Request model, string id, T entity)
+    public async Task<T?> CreateEntityNoAuthAsync(string endpoint, Request model)
     {
         using var httpClient = new HttpClient();
-        var jsonContent = new StringContent(JsonSerializer.Serialize(entity), Encoding.UTF8, "application/json");
-        var response = await httpClient.PutAsync($"{connectionString}/{endpoint}/{id}", jsonContent);
+        var jsonContent = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+        var response = await httpClient.PostAsync($"{connectionString}/{endpoint}", jsonContent);
         if (response != null && response.IsSuccessStatusCode)
         {
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
             return default;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
     }
 
-    public async Task<bool> DeleteEntityAsync(string endpoint, Request model, string id)
+    public async Task<T?> UpdateEntityAsync(string endpoint, string token, Request model)
     {
         using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var jsonContent = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+        var response = await httpClient.PutAsync($"{connectionString}/{endpoint}", jsonContent);
+        if (response != null && response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<T>(json, JsonOptions);
+        }
+
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
+            return default;
+
+        throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
+    }
+
+    public async Task UpdateEntityNoResponseAsync(string endpoint, string token, Request model)
+    {
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var jsonContent = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+        var response = await httpClient.PutAsync($"{connectionString}/{endpoint}", jsonContent);
+        if (response != null && response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+        }
+
+        if (null != response && response.StatusCode == HttpStatusCode.OK)
+            return;
+
+        throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
+    }
+
+    public async Task<bool> DeleteEntityAsync(string endpoint, string token, string id)
+    {
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         var response = await httpClient.DeleteAsync($"{connectionString}/{endpoint}/{id}");
         if (response != null && response.IsSuccessStatusCode)
         {
             return true;
         }
 
-        if (response != null && response.StatusCode == HttpStatusCode.Unauthorized)
-            return default;
+        if (response != null && (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.NotFound))
+            return false;
 
         throw new Exception($"Login failed. Status code: {response?.StatusCode.ToString() ?? "No Status Code"}");
     }

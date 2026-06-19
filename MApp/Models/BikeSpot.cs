@@ -16,5 +16,5 @@ public partial class BikeSpot : ObservableObject
     [ObservableProperty]
     private bool _isSelected;
 
-    public string Label => $"Bike {Number}";
+    public string Label => $"Fiets {Number}";
 }

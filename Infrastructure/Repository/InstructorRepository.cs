@@ -46,8 +46,13 @@ public class InstructorRepository(AthleteDbContext dbContext) : IInstructorRepos
     {
         Athlete athlete = await dbContext.Set<Athlete>().FindAsync(dto.AthleteId)
             ?? throw new InvalidOperationException($"Instructor with ID {dto.AthleteId} not found.");
-        athlete.ChangeEmailAddress(dto.EmailAddress);
-        athlete.ChangeFullName(dto.FullName);
+
+        EmailAddress emailAddress = new(dto.EmailAddress);
+        athlete.ChangeEmailAddress(emailAddress);
+
+        FullName fullName = new(dto.FirstName, dto.LastName);
+        athlete.ChangeFullName(fullName);
+
         athlete.SetUsername(dto.Username);
         dbContext.Set<Athlete>().Update(athlete);
         await dbContext.SaveChangesAsync();

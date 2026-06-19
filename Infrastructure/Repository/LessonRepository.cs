@@ -12,7 +12,10 @@ public class LessonRepository(LessonDbContext dbContext) : Repository<Lesson, Gu
         DbContext.Set<Lesson>()
             .Include(l => l.Workout).ThenInclude(w => w.Equipment)
             .Include(l => l.Schedule)
-            .Include(l => l.Room);
+            .Include(l => l.Room)
+            // A lesson must have a schedule to be usable; skip orphaned rows so a single
+            // bad record doesn't break the whole endpoint (the mapping reads l.Schedule).
+            .Where(l => l.Schedule != null);
 
     public async Task<Lesson?> GetLessonByIdAsync(Guid lessonId)
     {

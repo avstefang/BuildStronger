@@ -51,7 +51,7 @@ public class Subscription
             throw new InvalidOperationException("Cannot reactivate an expired, failed, or cancelled subscription.");
         }
 
-        if (StartDate >= DateOnly.FromDateTime(DateTime.Now))
+        if (StartDate > DateOnly.FromDateTime(DateTime.Now))
         {
             throw new InvalidOperationException("Cannot activate a subscription before its start date.");
         }

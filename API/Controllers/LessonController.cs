@@ -7,16 +7,17 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class LessonController(LessonService lessonService) : ControllerBase
 {
-    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllLessons()
     {
         try
         {
             IEnumerable<GetLessonDto>? lessons = await lessonService.GetAllLessonsAsync();
+            if (null == lessons)
+                NotFound("No lessons are found");
+
             return Ok(lessons);
         }
         catch (Exception ex)
@@ -25,7 +26,6 @@ public class LessonController(LessonService lessonService) : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpGet("workout/{workoutId:guid}")]
     public async Task<IActionResult> GetLessonsByWorkout([FromRoute] Guid workoutId)
     {
@@ -40,7 +40,6 @@ public class LessonController(LessonService lessonService) : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpGet("workout/{workoutId:guid}/upcoming")]
     public async Task<IActionResult> GetUpcomingLessonsByWorkout([FromRoute] Guid workoutId)
     {
@@ -55,7 +54,6 @@ public class LessonController(LessonService lessonService) : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpGet("instructor/{instructorId:guid}")]
     public async Task<IActionResult> GetLessonsByInstructor([FromRoute] Guid instructorId)
     {

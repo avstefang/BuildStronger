@@ -1,12 +1,12 @@
 @page "/staff/instructors"
 @layout StaffLayout
 
-<PageTitle>Instructors — BuildStronger Staff</PageTitle>
+<PageTitle>Instructeurs — BuildStronger Medewerkers</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Instructors</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Instructeurs</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddDialog" Class="mb-4">
-    Add Instructor
+    Instructeur toevoegen
 </MudButton>
 
 <MudGrid>
@@ -28,14 +28,14 @@
 </MudGrid>
 
 <MudDialog @bind-Visible="_dialogOpen">
-    <TitleContent>@(_editTarget == null ? "Add Instructor" : "Edit Instructor")</TitleContent>
+    <TitleContent>@(_editTarget == null ? "Instructeur toevoegen" : "Instructeur bewerken")</TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="_form.Name" Label="Full name" Variant="Variant.Outlined" Class="mb-3" />
-        <MudTextField @bind-Value="_form.PhotoUrl" Label="Photo URL" Variant="Variant.Outlined" HelperText="Leave empty to set as TBD" Class="mb-3" />
+        <MudTextField @bind-Value="_form.Name" Label="Volledige naam" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="_form.PhotoUrl" Label="Foto-URL" Variant="Variant.Outlined" HelperText="Laat leeg om als 'nog onbekend' in te stellen" Class="mb-3" />
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveInstructor">Save</MudButton>
+        <MudButton OnClick="() => _dialogOpen = false">Annuleren</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveInstructor">Opslaan</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -46,7 +46,7 @@
     [
         new("1", "Lisa van der Berg", null),
         new("2", "Mark Jansen", null),
-        new("3", "TBD", null),
+        new("3", "Nog onbekend", null),
     ];
 
     private bool _dialogOpen = false;

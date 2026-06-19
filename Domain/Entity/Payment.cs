@@ -17,13 +17,20 @@ public class Payment
 
     private Payment() { }
 
-    public Payment(ProcessorId processorId, Subscription subscription)
+    public Payment(ProcessorId processorId, Subscription subscription, PaymentMethod method)
     {
         ProcessorId = processorId;
         Subscription = subscription;
         Amount = Subscription.SubscriptionPlan.Price;
         Currency = Subscription.SubscriptionPlan.Currency;
-        Method = Subscription.SubscriptionPlan.PaymentMethod;
+
+        // A plan now offers several methods; the payment records the one the member picked.
+        if (!subscription.SubscriptionPlan.PaymentMethods.Contains(method))
+            throw new ArgumentException(
+                $"Payment method '{method}' is not offered by plan '{subscription.SubscriptionPlan.Name}'.",
+                nameof(method));
+
+        Method = method;
     }
 
     public void IsSuccessful()

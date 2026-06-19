@@ -43,6 +43,8 @@ public class AthleteRepository(AthleteDbContext dbConnection) : Repository<Athle
     public async Task<Athlete?> GetAthleteByEmailAsync(EmailAddress email)
     {
         return await DbContext.Set<Athlete>()
+            .Include(a => a.Subscriptions)
+            .ThenInclude(s => s.SubscriptionPlan)
             .FirstOrDefaultAsync(a => a.EmailAddress.Address == email.Address)
             ?? null;
     }
@@ -72,9 +74,13 @@ public class AthleteRepository(AthleteDbContext dbConnection) : Repository<Athle
 
     public async Task UpdateAthleteAsync(UpdateAthleteDto athleteDto)
     {
-        Athlete athlete = await GetAthleteByEmailAsync(athleteDto.EmailAddress);
-        athlete.ChangeEmailAddress(athleteDto.EmailAddress);
-        athlete.ChangeFullName(athleteDto.FullName);
+        EmailAddress emailAddress = new(athleteDto.EmailAddress);
+        Athlete athlete = await GetAthleteByEmailAsync(emailAddress) ??
+            throw new InvalidOperationException("Athlete not found");
+        athlete.ChangeEmailAddress(emailAddress);
+
+        FullName fullName = new(athleteDto.FirstName, athleteDto.LastName);
+        athlete.ChangeFullName(fullName);
         athlete.SetUsername(athleteDto.Username);
         await UpdateAsync(athlete);
     }

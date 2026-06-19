@@ -38,4 +38,5 @@ public static class BrandColors
     public const string Warning = "#F57F17";
     public const string Error = "#B71C1C";
     public const string Info = "#1565C0";
+    public const string Attention = "#f9fb2b";
 }

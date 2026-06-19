@@ -8,7 +8,9 @@ public static class ReservationMapping
     public static GetReservationDto ToDto(this Reservation reservation) => new()
     {
         Id = reservation.Id,
-        Athlete = reservation.Athlete.ToSummaryDto(),
+        // The Athlete navigation is intentionally ignored on the reservation context,
+        // so it isn't loaded here — guard against the resulting null.
+        Athlete = reservation.Athlete?.ToSummaryDto() ?? new GetAthleteSummaryDto(),
         Lesson = reservation.Lesson.ToDto(),
         ReservationDate = reservation.ReservationDate,
         Status = reservation.Status.ToString(),

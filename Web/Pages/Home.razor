@@ -1,19 +1,19 @@
 @page "/"
 
-<PageTitle>BuildStronger — Your Gym</PageTitle>
+<PageTitle>BuildStronger — Jouw sportschool</PageTitle>
 
 <MudPaper Elevation="0" Style="background: linear-gradient(135deg, #C62828 0%, #8E0000 100%); border-radius: 16px; padding: 64px 48px; margin-bottom: 48px;">
-    <MudText Typo="Typo.h2" Style="color: white; font-weight: 800;">Build Stronger.</MudText>
+    <MudText Typo="Typo.h2" Style="color: white; font-weight: 800;">Word sterker.</MudText>
     <MudText Typo="Typo.h5" Style="color: rgba(255,255,255,0.85); margin-top: 8px; margin-bottom: 32px;">
-        Group classes, spinning, bootcamp and more. Your gym, your pace.
+        Groepslessen, spinning, bootcamp en meer. Jouw sportschool, jouw tempo.
     </MudText>
     <MudButton Href="/register" Variant="Variant.Filled" Size="Size.Large"
                Style="background: white; color: #C62828; font-weight: 700; border-radius: 8px;">
-        Join now
+        Word lid
     </MudButton>
 </MudPaper>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Our Classes</MudText>
+<MudText Typo="Typo.h5" GutterBottom="true">Onze lessen</MudText>
 <MudGrid Class="mb-10">
     @foreach (var lesson in _lessons)
     {
@@ -29,7 +29,7 @@
     }
 </MudGrid>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Subscription Plans</MudText>
+<MudText Typo="Typo.h5" GutterBottom="true">Abonnementen</MudText>
 <MudGrid>
     @foreach (var plan in _plans)
     {
@@ -38,7 +38,7 @@
                 <MudCardContent>
                     @if (plan.Featured)
                     {
-                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mb-2">Most popular</MudChip>
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mb-2">Meest gekozen</MudChip>
                     }
                     <MudText Typo="Typo.h6">@plan.Name</MudText>
                     <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 800;">€@plan.Price</MudText>
@@ -47,7 +47,7 @@
                 <MudCardActions>
                     <MudButton Href="/register" Variant="@(plan.Featured ? Variant.Filled : Variant.Outlined)"
                                Color="Color.Primary" FullWidth="true">
-                        Sign up
+                        Aanmelden
                     </MudButton>
                 </MudCardActions>
             </MudCard>
@@ -61,21 +61,21 @@
 
     private List<LessonInfo> _lessons =
     [
-        new("Spinning", "Spinning room", "4 rows of 6 bikes — pick your spot"),
-        new("Yoga", "Room 1", "Relaxing flow for all levels"),
-        new("Bootcamp", "Outdoor", "High intensity outdoor training"),
-        new("Boxing", "Outdoor", "Technique and conditioning"),
-        new("Bodyshape", "Room 2", "Full body sculpting class"),
-        new("Club Power", "Room 2", "Strength training with weights"),
-        new("XCO", "Room 3", "Cross-training with XCO equipment"),
-        new("Total Body Workout", "Room 3", "Full body conditioning"),
+        new("Spinning", "Spinningzaal", "4 rijen van 6 fietsen — kies je plek"),
+        new("Yoga", "Zaal 1", "Ontspannen flow voor alle niveaus"),
+        new("Bootcamp", "Buiten", "Intensieve buitentraining"),
+        new("Boxing", "Buiten", "Techniek en conditie"),
+        new("Bodyshape", "Zaal 2", "Les om je hele lichaam te vormen"),
+        new("Club Power", "Zaal 2", "Krachttraining met gewichten"),
+        new("XCO", "Zaal 3", "Crosstraining met XCO-materiaal"),
+        new("Total Body Workout", "Zaal 3", "Conditietraining voor het hele lichaam"),
     ];
 
     private List<PlanInfo> _plans =
     [
-        new("2x per week", "29/mo", "Train up to twice per week, billed monthly"),
-        new("2x per week", "299/yr", "Train up to twice per week, billed yearly"),
-        new("Unlimited", "55/mo", "Unlimited training, billed monthly", Featured: true),
-        new("Unlimited", "549/yr", "Unlimited training, billed yearly"),
+        new("2x per week", "29/mnd", "Tot twee keer per week trainen, maandelijks gefactureerd"),
+        new("2x per week", "299/jr", "Tot twee keer per week trainen, jaarlijks gefactureerd"),
+        new("Onbeperkt", "55/mnd", "Onbeperkt trainen, maandelijks gefactureerd", Featured: true),
+        new("Onbeperkt", "549/jr", "Onbeperkt trainen, jaarlijks gefactureerd"),
     ];
 }

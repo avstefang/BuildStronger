@@ -5,39 +5,41 @@
              xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
              x:Class="MApp.Pages.RegisterPage"
              x:DataType="pageModels:RegisterPageModel"
-             Title="Sign up">
+             Title="Registreren">
 
-    <ScrollView>
+    <Grid>
+        <!-- The form is hidden until the plans have loaded, so the empty picker is never shown. -->
+        <ScrollView IsVisible="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}">
         <VerticalStackLayout Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
 
-            <Label Text="Create your account" Style="{StaticResource Title2}" />
+            <Label Text="Maak je account aan" Style="{StaticResource Title2}" />
 
             <Border Style="{StaticResource CardStyle}">
                 <VerticalStackLayout Spacing="16">
 
-                    <sf:SfTextInputLayout Hint="First name">
+                    <sf:SfTextInputLayout Hint="Voornaam">
                         <Entry Text="{Binding FirstName}" />
                     </sf:SfTextInputLayout>
-                    <sf:SfTextInputLayout Hint="Last name">
+                    <sf:SfTextInputLayout Hint="Achternaam">
                         <Entry Text="{Binding LastName}" />
                     </sf:SfTextInputLayout>
-                    <sf:SfTextInputLayout Hint="Email address">
+                    <sf:SfTextInputLayout Hint="E-mailadres">
                         <Entry Keyboard="Email" Text="{Binding Email}" />
                     </sf:SfTextInputLayout>
-                    <sf:SfTextInputLayout Hint="Password">
+                    <sf:SfTextInputLayout Hint="Wachtwoord">
                         <Entry IsPassword="True" Text="{Binding Password}" />
                     </sf:SfTextInputLayout>
 
-                    <sf:SfTextInputLayout Hint="Subscription (optional)">
-                        <Picker ItemsSource="{Binding Plans}" SelectedItem="{Binding SelectedPlan}" />
+                    <sf:SfTextInputLayout Hint="Abonnement (optioneel)">
+                            <Picker ItemsSource="{Binding Plans}" SelectedItem="{Binding SelectedPlan}" />
                     </sf:SfTextInputLayout>
 
                     <!-- Only shown once a real plan is selected -->
                     <VerticalStackLayout Spacing="16" IsVisible="{Binding HasSubscription}">
-                        <sf:SfTextInputLayout Hint="Membership start date">
+                        <sf:SfTextInputLayout Hint="Startdatum lidmaatschap">
                             <DatePicker Date="{Binding StartDate}" MinimumDate="{Binding MinStartDate}" />
                         </sf:SfTextInputLayout>
-                        <sf:SfTextInputLayout Hint="Payment method">
+                        <sf:SfTextInputLayout Hint="Betaalmethode">
                             <Picker ItemsSource="{Binding PaymentMethods}" SelectedItem="{Binding SelectedPaymentMethod}" />
                         </sf:SfTextInputLayout>
                     </VerticalStackLayout>
@@ -53,5 +55,10 @@
             </Border>
 
         </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+
+        <!-- Full-page spinner shown over the whole page while the plans load for the first time. -->
+        <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+    </Grid>
 </ContentPage>

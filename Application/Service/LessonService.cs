@@ -54,26 +54,26 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
     {
         IEnumerable<Lesson>? lessons = await _lessonRepository.GetLessonsByWorkoutIdAsync(workoutId) ??
             throw new Exception($"No lessons found for workout '{workoutId}'.");
-        return lessons.Select(lesson => lesson.ToDto());
+        return lessons.Where(l => l != null).Select(lesson => lesson.ToDto());
     }
 
     public async Task<IEnumerable<GetLessonDto>?> GetLessonsByInstructorIdAsync(Guid instructorId)
     {
         IEnumerable<Lesson>? lessons = await _lessonRepository.GetLessonsByInstructorIdAsync(instructorId) ??
             throw new Exception($"No lessons found for instructor with ID {instructorId}.");
-        return lessons.Select(lesson => lesson.ToDto());
+        return lessons.Where(l => l != null).Select(lesson => lesson.ToDto());
     }
 
     public async Task<IEnumerable<GetLessonDto>?> GetCurrentOrFutureLessonsByWorkoutIdAsync(Guid workoutId)
     {
         IEnumerable<Lesson>? lessons = await _lessonRepository.GetCurrentOrFutureLessonsByWorkoutIdAsync(workoutId) ??
             throw new Exception($"No current or future lessons found for workout '{workoutId}'.");
-        return lessons.Select(lesson => lesson.ToDto());
+        return lessons.Where(l => l != null).Select(lesson => lesson.ToDto());
     }
 
     public async Task DeleteLessonAsync(Guid lessonId) =>
         await _lessonRepository.DeleteLessonAsync(lessonId);
 
     public async Task<IEnumerable<GetLessonDto>?> GetAllLessonsAsync() =>
-        (await _lessonRepository.GetAllLessonsAsync())?.Select(lesson => lesson.ToDto());
+        (await _lessonRepository.GetAllLessonsAsync())?.Where(l => l != null).Select(lesson => lesson.ToDto());
 }

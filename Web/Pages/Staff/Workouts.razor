@@ -1,21 +1,21 @@
 @page "/staff/workouts"
 @layout StaffLayout
 
-<PageTitle>Workouts — BuildStronger Staff</PageTitle>
+<PageTitle>Workouts — BuildStronger Medewerkers</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">Workouts</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog" Class="mb-4">
-    Add Workout
+    Workout toevoegen
 </MudButton>
 
 <MudTable Items="_workouts" Hover="true" Striped="true" Bordered="true">
     <HeaderContent>
-        <MudTh>Name</MudTh>
-        <MudTh>Description</MudTh>
-        <MudTh>Duration (min)</MudTh>
-        <MudTh>Room</MudTh>
-        <MudTh>Actions</MudTh>
+        <MudTh>Naam</MudTh>
+        <MudTh>Omschrijving</MudTh>
+        <MudTh>Duur (min)</MudTh>
+        <MudTh>Zaal</MudTh>
+        <MudTh>Acties</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.Name</MudTd>
@@ -30,22 +30,22 @@
 </MudTable>
 
 <MudDialog @bind-Visible="_dialogOpen">
-    <TitleContent>@(_editTarget == null ? "Add Workout" : "Edit Workout")</TitleContent>
+    <TitleContent>@(_editTarget == null ? "Workout toevoegen" : "Workout bewerken")</TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="_form.Name" Label="Name" Variant="Variant.Outlined" Class="mb-3" />
-        <MudTextField @bind-Value="_form.Description" Label="Description" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
-        <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duration (minutes)" Variant="Variant.Outlined" Min="1" Class="mb-3" />
-        <MudSelect @bind-Value="_form.Room" Label="Room" Variant="Variant.Outlined">
-            <MudSelectItem Value="@("Room 1 (cap. 42)")">Room 1 (cap. 42)</MudSelectItem>
-            <MudSelectItem Value="@("Room 2 (cap. 32)")">Room 2 (cap. 32)</MudSelectItem>
-            <MudSelectItem Value="@("Room 3 (cap. 24)")">Room 3 (cap. 24)</MudSelectItem>
-            <MudSelectItem Value="@("Outdoor (cap. 20)")">Outdoor (cap. 20)</MudSelectItem>
-            <MudSelectItem Value="@("Spinning room (cap. 24)")">Spinning room (cap. 24)</MudSelectItem>
+        <MudTextField @bind-Value="_form.Name" Label="Naam" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="_form.Description" Label="Omschrijving" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
+        <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duur (minuten)" Variant="Variant.Outlined" Min="1" Class="mb-3" />
+        <MudSelect @bind-Value="_form.Room" Label="Zaal" Variant="Variant.Outlined">
+            <MudSelectItem Value="@("Zaal 1 (cap. 42)")">Zaal 1 (cap. 42)</MudSelectItem>
+            <MudSelectItem Value="@("Zaal 2 (cap. 32)")">Zaal 2 (cap. 32)</MudSelectItem>
+            <MudSelectItem Value="@("Zaal 3 (cap. 24)")">Zaal 3 (cap. 24)</MudSelectItem>
+            <MudSelectItem Value="@("Buiten (cap. 20)")">Buiten (cap. 20)</MudSelectItem>
+            <MudSelectItem Value="@("Spinningzaal (cap. 24)")">Spinningzaal (cap. 24)</MudSelectItem>
         </MudSelect>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveWorkout">Save</MudButton>
+        <MudButton OnClick="() => _dialogOpen = false">Annuleren</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveWorkout">Opslaan</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -54,14 +54,14 @@
 
     private List<WorkoutItem> _workouts =
     [
-        new("1", "Spinning", "Cardio on bikes", 45, "Spinning room (cap. 24)"),
-        new("2", "Yoga", "Flexibility and mindfulness", 60, "Room 1 (cap. 42)"),
-        new("3", "Bootcamp", "High intensity outdoor", 50, "Outdoor (cap. 20)"),
-        new("4", "Boxing", "Technique and conditioning", 60, "Outdoor (cap. 20)"),
-        new("5", "Bodyshape", "Full body sculpting", 45, "Room 2 (cap. 32)"),
-        new("6", "Club Power", "Strength with weights", 50, "Room 2 (cap. 32)"),
-        new("7", "XCO", "Cross-training", 45, "Room 3 (cap. 24)"),
-        new("8", "Total Body Workout", "Full body conditioning", 60, "Room 3 (cap. 24)"),
+        new("1", "Spinning", "Cardio op de fiets", 45, "Spinningzaal (cap. 24)"),
+        new("2", "Yoga", "Flexibiliteit en mindfulness", 60, "Zaal 1 (cap. 42)"),
+        new("3", "Bootcamp", "Intensieve buitentraining", 50, "Buiten (cap. 20)"),
+        new("4", "Boxing", "Techniek en conditie", 60, "Buiten (cap. 20)"),
+        new("5", "Bodyshape", "Hele lichaam vormen", 45, "Zaal 2 (cap. 32)"),
+        new("6", "Club Power", "Kracht met gewichten", 50, "Zaal 2 (cap. 32)"),
+        new("7", "XCO", "Crosstraining", 45, "Zaal 3 (cap. 24)"),
+        new("8", "Total Body Workout", "Conditie voor het hele lichaam", 60, "Zaal 3 (cap. 24)"),
     ];
 
     private bool _dialogOpen = false;
@@ -73,7 +73,7 @@
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int DurationMinutes { get; set; } = 45;
-        public string Room { get; set; } = "Room 1 (cap. 42)";
+        public string Room { get; set; } = "Zaal 1 (cap. 42)";
     }
 
     private void OpenAddDialog()

@@ -7,7 +7,8 @@ public class Lesson
     public Guid Id { get; private set; } = Guid.NewGuid();
     public Workout Workout { get; private set; }
     public Schedule Schedule { get; private set; }
-    public int CustomDuration { get; private set; }
+    // Nullable: the customDuration column is NULL when the lesson uses the workout's own duration.
+    public int? CustomDuration { get; private set; }
     public int MaxCapacity { get; private set; }
     public Instructor? Instructor { get; private set; } = null;
     public Room Room { get; private set; } = null!;
@@ -55,7 +56,7 @@ public class Lesson
 
     public TimeOnly GetEndTime()
     {
-        int totalDuration = CustomDuration > 0 ? CustomDuration : Workout.Duration.Minutes;
+        int totalDuration = CustomDuration is int cd && cd > 0 ? cd : Workout.Duration.Minutes;
         return Schedule.StartTime.Add(TimeSpan.FromMinutes(totalDuration));
     }
 }

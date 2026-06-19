@@ -63,10 +63,31 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         return verifyPassword ? athlete : null;
     }
 
-    public async Task<Athlete?> UpdateAthlete(UpdateAthleteDto updateAthleteDto)
+    public async Task<Athlete?> UpdateAthleteAsync(UpdateAthleteDto updateAthleteDto)
     {
-        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(updateAthleteDto.EmailAddress);
+        Athlete? athlete = await _athleteRepository.GetAthleteById(updateAthleteDto.AthleteId);
         if (athlete == null) return null;
+
+        if (updateAthleteDto.EmailAddress != athlete.EmailAddress.Address)
+        {
+            if (await _athleteRepository.GetAthleteByEmailAsync(new EmailAddress(updateAthleteDto.EmailAddress)) != null)
+                throw new ArgumentException($"Email address {updateAthleteDto.EmailAddress} is already taken");
+            EmailAddress email = new(updateAthleteDto.EmailAddress);
+            athlete.ChangeEmailAddress(email);
+        }
+
+        FullName fullName = new(updateAthleteDto.FirstName, updateAthleteDto.LastName);
+        if (athlete.FullName != fullName)
+        {
+            athlete.ChangeFullName(fullName);
+        }
+
+        if (updateAthleteDto.Username != athlete.Username)
+        {
+            if (await _athleteRepository.GetAthleteByUsernameAsync(updateAthleteDto.Username) != null)
+                throw new ArgumentException($"Username {updateAthleteDto.Username} is already taken");
+            athlete.SetUsername(updateAthleteDto.Username);
+        }
 
         await _athleteRepository.UpdateAthleteAsync(athlete);
         return athlete;

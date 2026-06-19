@@ -8,7 +8,7 @@ public class SubscriptionPlan(
     decimal price,
     int durationInMonths,
     int monthlyCreditAmount,
-    PaymentMethod paymentMethod = PaymentMethod.Wero,
+    IReadOnlyList<PaymentMethod>? paymentMethods = null,
     Currency currency = Currency.EUR
 ) {
     public Guid Id { get; private set; } = Guid.NewGuid();
@@ -16,7 +16,11 @@ public class SubscriptionPlan(
     public decimal Price { get; private set; } = price;
     public int DurationInMonths { get; private set; } = durationInMonths;
     public int MonthlyCreditAmount { get; private set; } = monthlyCreditAmount;
-    public PaymentMethod PaymentMethod { get; private set; } = paymentMethod;
+
+    /// <summary>The payment methods a member may choose from for this plan.</summary>
+    public IReadOnlyList<PaymentMethod> PaymentMethods { get; private set; } =
+        paymentMethods is { Count: > 0 } ? paymentMethods : [PaymentMethod.Wero];
+
     public Currency Currency { get; private set; } = currency;
 
     public void ChangeName(string newName)

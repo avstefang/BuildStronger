@@ -5,13 +5,15 @@
              xmlns:models="clr-namespace:MApp.Models"
              x:Class="MApp.Pages.BookingsPage"
              x:DataType="pageModels:BookingsPageModel"
-             Title="My bookings">
+             Title="Mijn boekingen">
 
     <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
         <ScrollView>
             <VerticalStackLayout Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
 
-                <Label Text="Upcoming" Style="{StaticResource Title2}" />
+                <Button Text="Boeking toevoegen" Command="{Binding AddBookingCommand}" />
+
+                <Label Text="Aankomend" Style="{StaticResource Title2}" />
                 <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding UpcomingBookings}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Booking">
@@ -25,7 +27,7 @@
                                         <Label Text="{Binding SpotLabel}" Style="{StaticResource Caption1Strong}" TextColor="{StaticResource Primary}"
                                                IsVisible="{Binding SpotLabel, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
                                     </VerticalStackLayout>
-                                    <Button Grid.Column="1" Text="Cancel" VerticalOptions="Center"
+                                    <Button Grid.Column="1" Text="Annuleren" VerticalOptions="Center"
                                             BackgroundColor="{StaticResource Error}"
                                             Command="{Binding CancelBookingCommand, Source={RelativeSource AncestorType={x:Type pageModels:BookingsPageModel}}, x:DataType=pageModels:BookingsPageModel}"
                                             CommandParameter="{Binding .}" />
@@ -35,7 +37,7 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <Label Text="Past" Style="{StaticResource Title2}" Margin="0,12,0,0" />
+                <Label Text="Afgelopen" Style="{StaticResource Title2}" Margin="0,12,0,0" />
                 <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding PastBookings}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Booking">

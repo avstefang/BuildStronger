@@ -10,13 +10,13 @@
     <!-- Startup page. Decides between "//home" and "//login" based on a stored token,
          then redirects with an absolute route so it is dropped from the back stack. -->
     <ShellContent
-        Title="Loading"
+        Title="Laden"
         ContentTemplate="{DataTemplate pages:LoadingPage}"
         Route="loading" />
 
     <!-- Login lives outside the TabBar so it has no tab; reached via "//login". -->
     <ShellContent
-        Title="Login"
+        Title="Inloggen"
         ContentTemplate="{DataTemplate pages:LoginPage}"
         Route="login" />
 
@@ -34,7 +34,7 @@
             Route="planning" />
 
         <ShellContent
-            Title="Bookings"
+            Title="Boekingen"
             Icon="{StaticResource IconBookings}"
             ContentTemplate="{DataTemplate pages:BookingsPage}"
             Route="bookings" />

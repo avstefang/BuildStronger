@@ -3,21 +3,21 @@
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Primary">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
-        <MudText Typo="Typo.h6" Class="ml-3">BuildStronger — Staff</MudText>
+        <MudText Typo="Typo.h6" Class="ml-3">BuildStronger — Medewerkers</MudText>
         <MudSpacer />
-        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Public site</MudButton>
+        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Publieke site</MudButton>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive">
         <MudDrawerHeader>
-            <MudText Typo="Typo.subtitle1"><b>Staff Portal</b></MudText>
+            <MudText Typo="Typo.subtitle1"><b>Medewerkersportaal</b></MudText>
         </MudDrawerHeader>
         <MudNavMenu>
             <MudNavLink Href="/staff/workouts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FitnessCenter">Workouts</MudNavLink>
-            <MudNavLink Href="/staff/instructors" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Instructors</MudNavLink>
-            <MudNavLink Href="/staff/schedule" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarMonth">Schedule</MudNavLink>
-            <MudNavLink Href="/staff/occupancy" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Occupancy</MudNavLink>
-            <MudNavLink Href="/staff/members" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Members</MudNavLink>
+            <MudNavLink Href="/staff/instructors" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Instructeurs</MudNavLink>
+            <MudNavLink Href="/staff/schedule" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarMonth">Rooster</MudNavLink>
+            <MudNavLink Href="/staff/occupancy" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Bezetting</MudNavLink>
+            <MudNavLink Href="/staff/members" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Leden</MudNavLink>
         </MudNavMenu>
     </MudDrawer>
 

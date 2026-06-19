@@ -111,4 +111,66 @@ public class SubscriptionController(SubscriptionService subscriptionService) : C
             return StatusCode(500, new { error = "Failed to retrieve subscriptions", details = ex.InnerException?.Message ?? ex.Message });
         }
     }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> GetSubscription()
+    {
+        try
+        {
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            EmailAddress emailAddress = new(email);
+            IEnumerable<GetSubscriptionDto>? subscriptions = await subscriptionService.GetAthleteSubscriptionsAsync(emailAddress);
+            GetSubscriptionDto? subscription = subscriptions?.FirstOrDefault();
+            if (subscription == null)
+            {
+                return NotFound(new { error = $"Athlete with email '{email}' has no active subscription" });
+            }
+            return Ok(subscription);
+        }
+        catch (AthleteNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to retrieve subscription", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
+    [Authorize]
+    [HttpPut("autorenew/{enable:bool}")]
+    public async Task<IActionResult> SetAutoRenew(bool enable)
+    {
+        try
+        {
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            await subscriptionService.SetAutoRenewAsync(email, enable);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to update auto-renewal", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
+
+    [Authorize]
+    [HttpPut("activatewaiting")]
+    public async Task<IActionResult> ActivateWaitingSubscription()
+    {
+        try
+        {
+            string email = User.FindFirstValue(ClaimTypes.Email) ?? throw new InvalidOperationException("User email not found");
+            await subscriptionService.ActivateSubscriptionAsync(email);
+            return Ok();
+        }
+        catch (SubscriptionStartDateNotPassedException ex)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to activate waiting subscription", details = ex.InnerException?.Message ?? ex.Message });
+        }
+    }
 }

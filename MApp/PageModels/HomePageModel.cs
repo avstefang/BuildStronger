@@ -1,12 +1,21 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using Application.Dto;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MApp.Models;
 
 namespace MApp.PageModels;
 
-public partial class HomePageModel : ObservableObject
+public partial class HomePageModel(EntityManager<GetSubscriptionPlanDto, string> subscriptionPlanManager, EntityManager<GetLessonDto, string> lessonManager, IAuthService auth, LocalDbService localDb) : ObservableObject
 {
+    private readonly EntityManager<GetSubscriptionPlanDto, string> _subscriptionPlanManager = subscriptionPlanManager;
+    private readonly EntityManager<GetLessonDto, string> _lessonManager = lessonManager;
+    private readonly IAuthService _auth = auth;
+    private readonly LocalDbService _localDb = localDb;
+
+    private const int FeaturedClassCount = 8;
+
     [ObservableProperty]
     private string _memberName = "Athlete";
 
@@ -16,9 +25,41 @@ public partial class HomePageModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<SubscriptionPlanInfo> _plans = [];
 
-    public HomePageModel()
+    /// <summary>True while the subscription plans are first loaded; drives the plans spinner.</summary>
+    [ObservableProperty]
+    private bool _isLoadingPlans;
+
+    /// <summary>True while the featured classes are loaded from the API.</summary>
+    [ObservableProperty]
+    private bool _isLoadingClasses;
+
+    /// <summary>Loads everything the home page shows: the featured classes and the plans.</summary>
+    public async Task LoadAsync()
     {
-        LoadMockData();
+        await LoadFeaturedClassesAsync();
+        await LoadSubscriptionPlansAsync();
+    }
+
+    private async Task LoadFeaturedClassesAsync()
+    {
+        IsLoadingClasses = true;
+        try
+        {
+            string? token = await _auth.GetTokenAsync();
+            if (string.IsNullOrWhiteSpace(token))
+                return;
+
+            var lessons = await _lessonManager.GetEntitiesAsync("Lesson", token) ?? [];
+            FeaturedClasses = [.. lessons.Select(GymClass.FromDto).OrderBy(c => c.Start).Take(FeaturedClassCount)];
+        }
+        catch
+        {
+            // Leave the list empty on failure rather than crashing the home page.
+        }
+        finally
+        {
+            IsLoadingClasses = false;
+        }
     }
 
     [RelayCommand]
@@ -29,23 +70,74 @@ public partial class HomePageModel : ObservableObject
     private Task ViewPlans()
         => Shell.Current.GoToAsync("//account");
 
-    private void LoadMockData()
+    /// <summary>
+    /// Loads the subscription plans the same way the registration page does: show the
+    /// SQLite cache instantly, then refresh from the API and update the cache.
+    /// </summary>
+    public async Task LoadSubscriptionPlansAsync()
     {
-        // TODO: replace mock data with a call to the API (public class offering).
-        FeaturedClasses =
-        [
-            new() { Id = 1, Name = "Spinning", Room = "Spinning room", Instructor = "Lisa van der Berg", Start = DateTime.Today.AddHours(7), DurationMinutes = 45, Capacity = 24, SpotsLeft = 6, IsSpinning = true },
-            new() { Id = 2, Name = "Yoga", Room = "Room 1", Instructor = "Mark Jansen", Start = DateTime.Today.AddHours(9), DurationMinutes = 60, Capacity = 42, SpotsLeft = 20 },
-            new() { Id = 3, Name = "Bootcamp", Room = "Outdoor", Instructor = "TBD", Start = DateTime.Today.AddHours(10), DurationMinutes = 50, Capacity = 20, SpotsLeft = 4 },
-            new() { Id = 4, Name = "Boxing", Room = "Outdoor", Instructor = "TBD", Start = DateTime.Today.AddHours(18), DurationMinutes = 60, Capacity = 20, SpotsLeft = 9 },
-        ];
+        IsLoadingPlans = true;
+        try
+        {
+            // Fast path: fill from the cache so the section appears instantly.
+            var cached = await _localDb.GetSubscriptionPlansAsync();
+            if (cached.Count > 0)
+            {
+                ShowPlans(cached);
+                IsLoadingPlans = false;
+            }
 
-        Plans =
-        [
-            new() { Name = "2x per week", Price = "€29", Description = "Train up to twice per week, billed monthly" },
-            new() { Name = "2x per week", Price = "€299", Description = "Train up to twice per week, billed yearly" },
-            new() { Name = "Unlimited", Price = "€55", Description = "Unlimited training, billed monthly", Featured = true },
-            new() { Name = "Unlimited", Price = "€549", Description = "Unlimited training, billed yearly" },
-        ];
+            // Refresh from the API and update the cache for next time.
+            var dto = await _subscriptionPlanManager.GetEntitiesNoAuthAsync("SubscriptionPlan/plans") ?? [];
+            var entities = dto.Select(CachedSubscriptionPlan.FromDto).ToList();
+            ShowPlans(entities);
+            await _localDb.SaveSubscriptionPlansAsync(entities);
+        }
+        catch
+        {
+            // Offline or API error: keep whatever the cache already gave us.
+        }
+        finally
+        {
+            IsLoadingPlans = false;
+        }
+    }
+
+    private void ShowPlans(IEnumerable<CachedSubscriptionPlan> plans) =>
+        Plans = [.. plans.Select(ToPlanInfo)];
+
+    private static SubscriptionPlanInfo ToPlanInfo(CachedSubscriptionPlan plan) => new()
+    {
+        Name = plan.Name,
+        Price = FormatPrice(plan.Price, plan.Currency),
+        Description = BillingDescription(plan.DurationInMonths, plan.MonthlyCreditAmount),
+        // Highlight the richer (effectively unlimited) plans, like the old mock did.
+        Featured = plan.MonthlyCreditAmount >= 999
+    };
+
+    private static string FormatPrice(decimal price, string currency)
+    {
+        string symbol = currency?.ToUpperInvariant() switch
+        {
+            "EUR" => "€",
+            "USD" => "$",
+            "GBP" => "£",
+            _ => currency is { Length: > 0 } ? currency.ToUpperInvariant() + " " : string.Empty
+        };
+        return $"{symbol}{price.ToString("0.##", CultureInfo.InvariantCulture)}";
+    }
+
+    private static string BillingDescription(int durationInMonths, int monthlyCreditAmount)
+    {
+        string billing = durationInMonths switch
+        {
+            1 => "maandelijks gefactureerd",
+            12 => "jaarlijks gefactureerd",
+            _ => $"per {durationInMonths} maanden gefactureerd"
+        };
+        string credits = monthlyCreditAmount >= 999
+            ? "Onbeperkt trainen"
+            : $"{monthlyCreditAmount} credits per maand";
+        return $"{credits}, {billing}";
     }
 }

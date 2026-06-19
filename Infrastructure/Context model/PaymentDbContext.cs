@@ -1,4 +1,5 @@
 using Domain.Entity;
+using Infrastructure.Conversion;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Context_model;
@@ -48,7 +49,8 @@ public class PaymentDbContext(DbContextOptions<PaymentDbContext> options) : DbCo
             builder.Property(sp => sp.Price).HasColumnName("price");
             builder.Property(sp => sp.DurationInMonths).HasColumnName("durationInMonths");
             builder.Property(sp => sp.MonthlyCreditAmount).HasColumnName("monthlyCreditAmount");
-            builder.Property(sp => sp.PaymentMethod).HasColumnName("paymentMethod").HasConversion<string>();
+            builder.Property(sp => sp.PaymentMethods).HasColumnName("paymentMethod")
+                   .HasConversion(PaymentMethodConversion.Converter, PaymentMethodConversion.Comparer);
             builder.Property(sp => sp.Currency).HasColumnName("paymentCurrency").HasConversion<string>();
         });
     }

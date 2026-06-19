@@ -7,10 +7,11 @@ using System.Text;
 
 namespace Application.Dto;
 
-public class UpdateAthleteDto(Guid athleteId, EmailAddress emailAddress, FullName fullName, string username)
+public class UpdateAthleteDto(Guid athleteId, string emailAddress, string firstName, string lastName, string username)
 {
     public Guid AthleteId { get; private set; } = athleteId;
-    public EmailAddress EmailAddress { get; private set; } = emailAddress;
-    public FullName FullName { get; private set; } = fullName;
+    public string EmailAddress { get; private set; } = emailAddress;
+    public string FirstName { get; private set; } = firstName;
+    public string LastName { get; private set; } = lastName;
     public string Username { get; private set; } = username;
 }

@@ -69,6 +69,7 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.71" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.9" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -87,6 +88,12 @@
 	
 	<ItemGroup>
 		<EmbeddedResource Include="appsettings.json" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <MauiXaml Update="Pages\ChangeSubscriptionPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 </Project>

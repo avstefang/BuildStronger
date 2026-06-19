@@ -14,7 +14,7 @@
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="12" />
             </CollectionView.ItemsLayout>
             <CollectionView.EmptyView>
-                <Label Text="No classes scheduled." HorizontalOptions="Center" Margin="0,40" />
+                <Label Text="Geen lessen ingepland." HorizontalOptions="Center" Margin="0,40" />
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:GymClass">
@@ -29,7 +29,7 @@
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center" HorizontalOptions="End">
                                 <Label Text="{Binding SpotsLabel}" Style="{StaticResource Caption1Strong}" HorizontalTextAlignment="End" />
-                                <Button Text="Book"
+                                <Button Text="Boeken"
                                         IsEnabled="{Binding IsFull, Converter={StaticResource InvertedBoolConverter}}"
                                         Command="{Binding BookClassCommand, Source={RelativeSource AncestorType={x:Type pageModels:PlanningPageModel}}, x:DataType=pageModels:PlanningPageModel}"
                                         CommandParameter="{Binding .}" />

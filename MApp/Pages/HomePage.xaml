@@ -19,17 +19,18 @@
                     </LinearGradientBrush>
                 </Border.Background>
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Build Stronger." Style="{StaticResource Title1}" TextColor="{StaticResource White}" />
-                    <Label Text="Group classes, spinning, bootcamp and more. Your gym, your pace."
+                    <Label Text="Word sterker." Style="{StaticResource Title1}" TextColor="{StaticResource White}" />
+                    <Label Text="Groepslessen, spinning, bootcamp en meer. Jouw sportschool, jouw tempo."
                            Style="{StaticResource Body2}" TextColor="{StaticResource White}" Opacity="0.9" />
-                    <Button Text="View schedule" Command="{Binding ViewScheduleCommand}"
+                    <Button Text="Bekijk rooster" Command="{Binding ViewScheduleCommand}"
                             BackgroundColor="{StaticResource White}" TextColor="{StaticResource Primary}"
                             HorizontalOptions="Start" Margin="0,12,0,0" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- Featured classes -->
-            <Label Text="Our classes" Style="{StaticResource Title2}" Margin="0,8,0,0" />
+            <Label Text="Onze lessen" Style="{StaticResource Title2}" Margin="0,8,0,0" />
+            <ActivityIndicator IsRunning="{Binding IsLoadingClasses}" IsVisible="{Binding IsLoadingClasses}" HorizontalOptions="Center" />
             <CollectionView ItemsSource="{Binding FeaturedClasses}" HeightRequest="160">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Horizontal" ItemSpacing="12" />
@@ -49,7 +50,8 @@
             </CollectionView>
 
             <!-- Subscription plans -->
-            <Label Text="Subscription plans" Style="{StaticResource Title2}" Margin="0,8,0,0" />
+            <Label Text="Abonnementen" Style="{StaticResource Title2}" Margin="0,8,0,0" />
+            <ActivityIndicator IsRunning="{Binding IsLoadingPlans}" IsVisible="{Binding IsLoadingPlans}" HorizontalOptions="Center" />
             <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding Plans}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="models:SubscriptionPlanInfo">

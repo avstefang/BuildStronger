@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace MApp.Models;
 
 /// <summary>
@@ -5,14 +7,19 @@ namespace MApp.Models;
 /// </summary>
 public class MemberProfile
 {
-    public string FullName { get; set; } = string.Empty;
+    private static readonly CultureInfo Dutch = CultureInfo.GetCultureInfo("nl-NL");
+
+    public Guid Id { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
     public string PlanName { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
 
-    public string MemberSince => StartDate.ToString("d MMM yyyy");
-    public string RenewsOn => EndDate.ToString("d MMM yyyy");
+    public string MemberSince => StartDate.ToString("d MMM yyyy", Dutch);
+    public string RenewsOn => EndDate.ToString("d MMM yyyy", Dutch);
 }

@@ -1,29 +1,29 @@
 @page "/register"
 
-<PageTitle>Sign Up — BuildStronger</PageTitle>
+<PageTitle>Registreren — BuildStronger</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Create your account</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Maak je account aan</MudText>
 
 <MudGrid>
     <MudItem xs="12" md="6">
         <MudCard>
             <MudCardContent>
-                <MudTextField @bind-Value="_firstName" Label="First name" Variant="Variant.Outlined" Class="mb-3" />
-                <MudTextField @bind-Value="_lastName" Label="Last name" Variant="Variant.Outlined" Class="mb-3" />
-                <MudTextField @bind-Value="_email" Label="Email address" InputType="InputType.Email" Variant="Variant.Outlined" Class="mb-3" />
-                <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4" />
+                <MudTextField @bind-Value="_firstName" Label="Voornaam" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_lastName" Label="Achternaam" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_email" Label="E-mailadres" InputType="InputType.Email" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_password" Label="Wachtwoord" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4" />
 
-                <MudText Typo="Typo.subtitle1" Class="mb-2">Choose a subscription</MudText>
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Kies een abonnement</MudText>
                 <MudRadioGroup @bind-Value="_selectedPlan" Class="mb-4">
-                    <MudRadio Value="@("2x_monthly")">2x per week — €29/month</MudRadio>
-                    <MudRadio Value="@("2x_yearly")">2x per week — €299/year</MudRadio>
-                    <MudRadio Value="@("unlimited_monthly")">Unlimited — €55/month</MudRadio>
-                    <MudRadio Value="@("unlimited_yearly")">Unlimited — €549/year</MudRadio>
+                    <MudRadio Value="@("2x_monthly")">2x per week — €29/maand</MudRadio>
+                    <MudRadio Value="@("2x_yearly")">2x per week — €299/jaar</MudRadio>
+                    <MudRadio Value="@("unlimited_monthly")">Onbeperkt — €55/maand</MudRadio>
+                    <MudRadio Value="@("unlimited_yearly")">Onbeperkt — €549/jaar</MudRadio>
                 </MudRadioGroup>
 
-                <MudDatePicker @bind-Date="_startDate" Label="Membership start date" MinDate="DateTime.Today" Variant="Variant.Outlined" Class="mb-4" />
+                <MudDatePicker @bind-Date="_startDate" Label="Startdatum lidmaatschap" MinDate="DateTime.Today" Variant="Variant.Outlined" Class="mb-4" />
 
-                <MudText Typo="Typo.subtitle1" Class="mb-2">Payment method</MudText>
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Betaalmethode</MudText>
                 <MudRadioGroup @bind-Value="_paymentMethod" Class="mb-4">
                     <MudRadio Value="@("ideal")">iDEAL</MudRadio>
                     <MudRadio Value="@("wero")">Wero</MudRadio>
@@ -35,13 +35,13 @@
                 }
                 @if (_success)
                 {
-                    <MudAlert Severity="Severity.Success" Class="mb-3">Registration successful! Check your email for confirmation.</MudAlert>
+                    <MudAlert Severity="Severity.Success" Class="mb-3">Registratie geslaagd! Controleer je e-mail voor de bevestiging.</MudAlert>
                 }
             </MudCardContent>
             <MudCardActions Class="px-4 pb-4">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="Submit" Disabled="_loading">
                     @if (_loading) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
-                    Pay & Register
+                    Betalen & registreren
                 </MudButton>
             </MudCardActions>
         </MudCard>

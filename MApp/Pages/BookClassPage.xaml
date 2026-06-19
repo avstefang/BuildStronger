@@ -5,7 +5,7 @@
              xmlns:models="clr-namespace:MApp.Models"
              x:Class="MApp.Pages.BookClassPage"
              x:DataType="pageModels:BookClassPageModel"
-             Title="Book class">
+             Title="Les boeken">
 
     <ScrollView>
         <VerticalStackLayout Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
@@ -23,8 +23,8 @@
 
             <!-- Spinning bike picker -->
             <VerticalStackLayout Spacing="{StaticResource LayoutSpacing}" IsVisible="{Binding IsSpinning}">
-                <Label Text="Pick your bike" Style="{StaticResource Title2}" Margin="0,8,0,0" />
-                <Label Text="Spinning room — 4 rows of 6 bikes" Style="{StaticResource Caption1}" TextColor="{StaticResource Gray500}" />
+                <Label Text="Kies je fiets" Style="{StaticResource Title2}" Margin="0,8,0,0" />
+                <Label Text="Spinningzaal — 4 rijen van 6 fietsen" Style="{StaticResource Caption1}" TextColor="{StaticResource Gray500}" />
 
                 <CollectionView ItemsSource="{Binding Bikes}" SelectionMode="None">
                     <CollectionView.ItemsLayout>
@@ -57,15 +57,18 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <Label Text="{Binding SelectedBike.Label, StringFormat='Selected: {0}'}"
+                <Label Text="{Binding SelectedBike.Label, StringFormat='Geselecteerd: {0}'}"
                        Style="{StaticResource Body1Strong}" TextColor="{StaticResource Primary}"
                        IsVisible="{Binding SelectedBike, Converter={StaticResource IsNotNullConverter}}" />
             </VerticalStackLayout>
 
             <!-- Actions -->
-            <Button Text="Confirm booking" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}" Margin="0,12,0,0" />
-            <Button Text="Cancel" Command="{Binding CancelCommand}"
+            <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Error}" Margin="0,12,0,0"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
+            <Button Text="Boeking bevestigen" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanConfirm}" Margin="0,12,0,0" />
+            <Button Text="Annuleren" Command="{Binding CancelCommand}"
                     BackgroundColor="Transparent" TextColor="{StaticResource Primary}" BorderColor="{StaticResource Primary}" BorderWidth="1" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" HorizontalOptions="Center" />
 
         </VerticalStackLayout>
     </ScrollView>

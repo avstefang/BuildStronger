@@ -12,7 +12,7 @@ public static class SubscriptionPlanMapping
         Price = plan.Price,
         DurationInMonths = plan.DurationInMonths,
         MonthlyCreditAmount = plan.MonthlyCreditAmount,
-        PaymentMethod = plan.PaymentMethod.ToString(),
+        PaymentMethod = string.Join(",", plan.PaymentMethods.Select(m => m.ToString())),
         Currency = plan.Currency.ToString()
     };
 }
