@@ -15,12 +15,18 @@ public interface IAuthService
 public class AuthService : IAuthService
 {
     private const string TokenKey = "authToken";
+    private LocalDbService dbService = new();
 
     public Task SaveTokenAsync(string token) => SecureStorage.SetAsync(TokenKey, token);
 
     public Task<string?> GetTokenAsync() => SecureStorage.GetAsync(TokenKey);
 
-    public void Logout() => SecureStorage.Remove(TokenKey);
+    public async void Logout()
+    {
+        SecureStorage.Remove(TokenKey);
+        await dbService.ClearAthleteAsync();
+        await dbService.ClearBookingsAsync();
+    }
 
     public async Task<bool> IsAuthenticatedAsync()
     {

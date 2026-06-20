@@ -57,7 +57,7 @@ public partial class EditProfilePageModel : ObservableObject
             }
 
             UpdateAthleteDto updateDto = new(profileInfo.Id, Email, Firstname, Lastname, Username);
-            GetAthleteDto? updatedAthlete = await _entityManager.UpdateEntityAsync("Athlete", token, updateDto);
+            GetAthleteDto? updatedAthlete = await _entityManager.UpdateEntityAsync("Athlete", updateDto, token);
             if (updatedAthlete is null)
             {
                 ErrorMessage = "Account informatie kon niet worden opgeslagen.";
@@ -73,6 +73,7 @@ public partial class EditProfilePageModel : ObservableObject
                 Email = Email,
                 Username = Username,
                 Role = profileInfo.Role,
+                PhotoFile = profileInfo.PhotoFile,
                 PlanName = currentProfileInfo?.PlanName ?? string.Empty,
                 Status = currentProfileInfo?.Status ?? string.Empty,
                 StartDate = currentProfileInfo?.StartDate ?? DateTime.MinValue,
@@ -83,7 +84,7 @@ public partial class EditProfilePageModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Account informatie kon niet worden opgeslagen. {ex.Message}";
+            ErrorMessage = $"Account informatie kon niet worden opgeslagen.";
         }
         finally { IsBusy = false; }
     }

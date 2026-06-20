@@ -21,11 +21,14 @@ public class ReservationDbContext(DbContextOptions<ReservationDbContext> context
             builder.Property(r => r.ReservedAt).HasColumnName("reservedAt");
             builder.Property(r => r.Status).HasColumnName("status").HasConversion<string>();
             builder.Property<bool>("IsCheckedIn").HasColumnName("isCheckedIn");
-            builder.Property<Guid>("AthleteId").HasColumnName("athleteId");
+            builder.Property(r => r.AthleteId).HasColumnName("athleteId");
             builder.HasOne(r => r.Lesson)
                    .WithMany()
                    .HasForeignKey("lessonId");
             builder.Ignore(r => r.Athlete);
+            // The chosen spot lives in the equipmentSpot_reservation table (see EquipmentSpotDbContext),
+            // not on the reservation row — ignore it here so EF doesn't try to insert the spot graph.
+            builder.Ignore(r => r.EquipmentSpot);
         });
 
         modelBuilder.Entity<Lesson>(builder =>
@@ -33,7 +36,7 @@ public class ReservationDbContext(DbContextOptions<ReservationDbContext> context
             builder.ToTable("lesson");
             builder.Property(l => l.MaxCapacity).HasColumnName("maxCapacity");
             builder.Property(l => l.CustomDuration).HasColumnName("customDuration");
-            builder.Property<Guid>("InstructorId").HasColumnName("instructorId");
+            builder.Property(l => l.InstructorId).HasColumnName("instructorId");
             builder.Ignore(l => l.Instructor);
             builder.HasOne(l => l.Workout)
                    .WithMany()
@@ -43,7 +46,7 @@ public class ReservationDbContext(DbContextOptions<ReservationDbContext> context
                    .HasForeignKey("roomId");
             builder.HasOne(l => l.Schedule)
                    .WithOne()
-                   .HasForeignKey<Schedule>("lessonId");
+                   .HasForeignKey<Schedule>("LessonId");
         });
 
         modelBuilder.Entity<Schedule>(builder =>

@@ -6,6 +6,7 @@ namespace Infrastructure.Context_model;
 public class EquipmentSpotDbContext(DbContextOptions<EquipmentSpotDbContext> dbContextOptions) : DbContext(dbContextOptions)
 {
     public DbSet<EquipmentSpot> EquipmentSpot { get; set; }
+    public DbSet<EquipmentSpotReservation> EquipmentSpotReservation { get; set; }
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<EquipmentRoom> EquipmentRoom { get; set; }
     public DbSet<Lesson> Lesson { get; set; }
@@ -33,6 +34,19 @@ public class EquipmentSpotDbContext(DbContextOptions<EquipmentSpotDbContext> dbC
                    .HasForeignKey("equipmentRoomId");
         });
 
+        modelBuilder.Entity<EquipmentSpotReservation>(builder =>
+        {
+            builder.ToTable("equipmentSpot_reservation");
+            builder.HasKey(e => e.ReservationId);
+            builder.Property(e => e.ReservationId).HasColumnName("reservationId");
+            builder.Property(e => e.LessonId).HasColumnName("lessonId");
+            builder.Property(e => e.AthleteId).HasColumnName("athleteId");
+            builder.Property(e => e.ReservedAt).HasColumnName("reservedAt");
+            builder.HasOne(e => e.EquipmentSpot)
+                   .WithMany()
+                   .HasForeignKey("equipmentSpotId");
+        });
+
         modelBuilder.Entity<Equipment>(builder =>
         {
             builder.ToTable("equipment");
@@ -57,13 +71,13 @@ public class EquipmentSpotDbContext(DbContextOptions<EquipmentSpotDbContext> dbC
             builder.ToTable("lesson");
             builder.Property(l => l.MaxCapacity).HasColumnName("maxCapacity");
             builder.Property(l => l.CustomDuration).HasColumnName("customDuration");
-            builder.Property<Guid>("InstructorId").HasColumnName("instructorId");
+            builder.Property(l => l.InstructorId).HasColumnName("instructorId");
             builder.HasOne(l => l.Workout)
                    .WithMany()
                    .HasForeignKey("workoutId");
             builder.HasOne(l => l.Schedule)
                    .WithOne()
-                   .HasForeignKey<Schedule>("lessonId");
+                   .HasForeignKey<Schedule>("LessonId");
             builder.HasOne(l => l.Room)
                    .WithMany()
                    .HasForeignKey("roomId");
@@ -77,11 +91,13 @@ public class EquipmentSpotDbContext(DbContextOptions<EquipmentSpotDbContext> dbC
             builder.Property(r => r.ReservedAt).HasColumnName("reservedAt");
             builder.Property(r => r.Status).HasColumnName("status").HasConversion<string>();
             builder.Property<bool>("IsCheckedIn").HasColumnName("isCheckedIn");
-            builder.Property<Guid>("AthleteId").HasColumnName("athleteId");
+            builder.Property(r => r.AthleteId).HasColumnName("athleteId");
             builder.HasOne(r => r.Lesson)
                    .WithMany()
                    .HasForeignKey("lessonId");
             builder.Ignore(r => r.Athlete);
+            // The spot link is modelled separately as EquipmentSpotReservation, not on the reservation row.
+            builder.Ignore(r => r.EquipmentSpot);
         });
 
         modelBuilder.Entity<Schedule>(builder =>

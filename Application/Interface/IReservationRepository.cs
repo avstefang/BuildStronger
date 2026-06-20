@@ -15,6 +15,7 @@ public interface IReservationRepository
     Task<IEnumerable<Reservation>?> GetAllReservationsByEmailAsync(EmailAddress email);
     Task<IEnumerable<Reservation>?> GetAllReservationsAsync();
     Task<int> GetReservationSpotsLeftAsync(Guid lessonId);
+    Task<Dictionary<Guid, int>> GetAcceptedCountsByLessonAsync();
     Task AddReservationAsync(Reservation reservation);
     Task UpdateReservationAsync(Reservation reservation);
     Task DeleteReservationAsync(Guid id);

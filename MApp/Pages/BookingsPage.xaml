@@ -13,8 +13,33 @@
 
                 <Button Text="Boeking toevoegen" Command="{Binding AddBookingCommand}" />
 
-                <Label Text="Aankomend" Style="{StaticResource Title2}" />
-                <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding UpcomingBookings}">
+                <Label Text="Wachtlijst" Style="{StaticResource Title2}" IsVisible="{Binding HasWaitlistBookings}" />
+                <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding WaitlistBookings}" IsVisible="{Binding HasWaitlistBookings}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:Booking">
+                            <Border Style="{StaticResource CardStyle}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                        <Label Text="{Binding ClassName}" Style="{StaticResource Title3}" />
+                                        <Label Text="{Binding DayLabel}" Style="{StaticResource Caption1Strong}" TextColor="{StaticResource Primary}" />
+                                        <Label Text="{Binding TimeRange}" Style="{StaticResource Body2}" />
+                                        <Label Text="{Binding Room}" Style="{StaticResource Caption1}" TextColor="{StaticResource Gray500}" />
+                                        <Label Text="{Binding SpotLabel}" Style="{StaticResource Caption1Strong}" TextColor="{StaticResource Primary}"
+                                                IsVisible="{Binding SpotLabel, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="1" Text="Annuleren" VerticalOptions="Center"
+                                            BackgroundColor="{StaticResource Error}"
+                                            IsEnabled="{Binding CanCancel}"
+                                            Command="{Binding CancelBookingCommand, Source={RelativeSource AncestorType={x:Type pageModels:BookingsPageModel}}, x:DataType=pageModels:BookingsPageModel}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+                <Label Text="Aankomend" Style="{StaticResource Title2}" IsVisible="{Binding HasUpcomingBookings}" />
+                <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding UpcomingBookings}" IsVisible="{Binding HasUpcomingBookings}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Booking">
                             <Border Style="{StaticResource CardStyle}">
@@ -29,6 +54,7 @@
                                     </VerticalStackLayout>
                                     <Button Grid.Column="1" Text="Annuleren" VerticalOptions="Center"
                                             BackgroundColor="{StaticResource Error}"
+                                            IsEnabled="{Binding CanCancel}"
                                             Command="{Binding CancelBookingCommand, Source={RelativeSource AncestorType={x:Type pageModels:BookingsPageModel}}, x:DataType=pageModels:BookingsPageModel}"
                                             CommandParameter="{Binding .}" />
                                 </Grid>
@@ -37,8 +63,8 @@
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
 
-                <Label Text="Afgelopen" Style="{StaticResource Title2}" Margin="0,12,0,0" />
-                <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding PastBookings}">
+                <Label Text="Afgelopen" Style="{StaticResource Title2}" Margin="0,12,0,0" IsVisible="{Binding HasPastBookings}" />
+                <VerticalStackLayout Spacing="12" BindableLayout.ItemsSource="{Binding PastBookings}" IsVisible="{Binding HasPastBookings}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Booking">
                             <Border Style="{StaticResource CardStyle}" Opacity="0.7">

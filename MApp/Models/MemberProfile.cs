@@ -15,6 +15,10 @@ public class MemberProfile
     public string Email { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
+
+    /// <summary>Server filename of the profile photo (null when none was uploaded). Served by GET api/Photo/{file}.</summary>
+    public string? PhotoFile { get; set; }
+
     public string PlanName { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
@@ -22,4 +26,5 @@ public class MemberProfile
 
     public string MemberSince => StartDate.ToString("d MMM yyyy", Dutch);
     public string RenewsOn => EndDate.ToString("d MMM yyyy", Dutch);
+    public bool IsAutoRenewalEnabled { get; set; }
 }

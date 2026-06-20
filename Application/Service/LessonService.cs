@@ -9,12 +9,30 @@ using Domain.Value_object;
 
 namespace Application.Service;
 
-public class LessonService(ILessonRepository lessonRepository, IWorkoutRepository workoutRepository, IRoomRepository roomRepository, IScheduleRepository scheduleRepository)
+public class LessonService(ILessonRepository lessonRepository, IWorkoutRepository workoutRepository, IRoomRepository roomRepository, IScheduleRepository scheduleRepository, IInstructorRepository instructorRepository, IReservationRepository reservationRepository)
 {
     private readonly ILessonRepository _lessonRepository = lessonRepository;
     private readonly IWorkoutRepository _workoutRepository = workoutRepository;
     private readonly IRoomRepository _roomRepository = roomRepository;
     private readonly IScheduleRepository _scheduleRepository = scheduleRepository;
+    private readonly IInstructorRepository _instructorRepository = instructorRepository;
+    private readonly IReservationRepository _reservationRepository = reservationRepository;
+
+    // The Instructor navigation is ignored by EF (it lives in the athlete aggregate), so populate it
+    // from the lesson's InstructorId before mapping, otherwise the DTO's instructor is always null.
+    private async Task PopulateInstructorsAsync(IEnumerable<Lesson> lessons)
+    {
+        List<Lesson> needing = lessons.Where(l => l is not null && l.InstructorId is not null).ToList();
+        if (needing.Count == 0)
+            return;
+
+        Dictionary<Guid, Instructor> instructors = (await _instructorRepository.GetAllInstructorsAsync())
+            .ToDictionary(i => i.Athlete.Id);
+
+        foreach (Lesson lesson in needing)
+            if (lesson.InstructorId is Guid id && instructors.TryGetValue(id, out Instructor? instructor))
+                lesson.AssignInstructor(instructor);
+    }
 
     public async Task<GetLessonDto?> CreateLessonAsync(CreateLessonDto dto)
     {
@@ -54,6 +72,7 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
     {
         IEnumerable<Lesson>? lessons = await _lessonRepository.GetLessonsByWorkoutIdAsync(workoutId) ??
             throw new Exception($"No lessons found for workout '{workoutId}'.");
+        await PopulateInstructorsAsync(lessons);
         return lessons.Where(l => l != null).Select(lesson => lesson.ToDto());
     }
 
@@ -61,6 +80,7 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
     {
         IEnumerable<Lesson>? lessons = await _lessonRepository.GetLessonsByInstructorIdAsync(instructorId) ??
             throw new Exception($"No lessons found for instructor with ID {instructorId}.");
+        await PopulateInstructorsAsync(lessons);
         return lessons.Where(l => l != null).Select(lesson => lesson.ToDto());
     }
 
@@ -68,12 +88,24 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
     {
         IEnumerable<Lesson>? lessons = await _lessonRepository.GetCurrentOrFutureLessonsByWorkoutIdAsync(workoutId) ??
             throw new Exception($"No current or future lessons found for workout '{workoutId}'.");
+        await PopulateInstructorsAsync(lessons);
         return lessons.Where(l => l != null).Select(lesson => lesson.ToDto());
     }
 
     public async Task DeleteLessonAsync(Guid lessonId) =>
         await _lessonRepository.DeleteLessonAsync(lessonId);
 
-    public async Task<IEnumerable<GetLessonDto>?> GetAllLessonsAsync() =>
-        (await _lessonRepository.GetAllLessonsAsync())?.Where(l => l != null).Select(lesson => lesson.ToDto());
+    public async Task<IEnumerable<GetLessonDto>?> GetAllLessonsAsync()
+    {
+        IEnumerable<Lesson>? lessons = await _lessonRepository.GetAllLessonsAsync();
+        if (lessons is null)
+            return null;
+
+        await PopulateInstructorsAsync(lessons);
+
+        // Subtract accepted bookings so the planning shows real availability instead of full capacity.
+        Dictionary<Guid, int> bookedCounts = await _reservationRepository.GetAcceptedCountsByLessonAsync();
+        return lessons.Where(l => l != null)
+            .Select(lesson => lesson.ToDto(bookedCounts.GetValueOrDefault(lesson.Id)));
+    }
 }

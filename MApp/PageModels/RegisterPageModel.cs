@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace MApp.PageModels;
 
-public partial class RegisterPageModel(EntityManager<RegisterAthleteDto, RegisterAthleteDto> registerManager, EntityManager<GetSubscriptionPlanDto, string> subscriptionPlanManager, EntityManager<LoginResponseDto, LoginAthleteDto> loginManager, IAuthService auth, LocalDbService localDb) : ObservableObject
+public partial class RegisterPageModel(EntityManager<GetAthleteDto, RegisterAthleteDto> registerManager, EntityManager<GetSubscriptionPlanDto, string> subscriptionPlanManager, EntityManager<LoginResponseDto, LoginAthleteDto> loginManager, IAuthService auth, LocalDbService localDb) : ObservableObject
 {
     [ObservableProperty]
     private string _firstName = string.Empty;
@@ -56,7 +56,7 @@ public partial class RegisterPageModel(EntityManager<RegisterAthleteDto, Registe
     [ObservableProperty]
     private string? _errorMessage;
 
-    private EntityManager<RegisterAthleteDto, RegisterAthleteDto> _registerManager = registerManager;
+    private EntityManager<GetAthleteDto, RegisterAthleteDto> _registerManager = registerManager;
     private EntityManager<GetSubscriptionPlanDto, string> _subscriptionPlanManager = subscriptionPlanManager;
     private readonly EntityManager<LoginResponseDto, LoginAthleteDto> _loginManager = loginManager;
     private readonly IAuthService _auth = auth;
@@ -80,7 +80,7 @@ public partial class RegisterPageModel(EntityManager<RegisterAthleteDto, Registe
                 LastName = LastName,
                 Password = Password
             };
-            await _registerManager.CreateEntityNoAuthAsync("Auth/register", registerDto);
+            await _registerManager.CreateEntityAsync("Auth/register", registerDto);
 
             // No plan chosen: nothing to pay for, straight to the login screen.
             if (!HasSubscription)
@@ -151,7 +151,7 @@ public partial class RegisterPageModel(EntityManager<RegisterAthleteDto, Registe
             }
 
             // Refresh from the API and update the cache for next time.
-            _subscriptionPlanDto = await _subscriptionPlanManager.GetEntitiesNoAuthAsync("SubscriptionPlan/plans") ?? [];
+            _subscriptionPlanDto = await _subscriptionPlanManager.GetEntitiesAsync("SubscriptionPlan/plans") ?? [];
             _cachedPlans = _subscriptionPlanDto.Select(CachedSubscriptionPlan.FromDto).ToList();
             RebuildPlans(_subscriptionPlanDto.Select(p => p.Name));
             await _localDb.SaveSubscriptionPlansAsync(_cachedPlans);

@@ -88,7 +88,7 @@ public partial class HomePageModel(EntityManager<GetSubscriptionPlanDto, string>
             }
 
             // Refresh from the API and update the cache for next time.
-            var dto = await _subscriptionPlanManager.GetEntitiesNoAuthAsync("SubscriptionPlan/plans") ?? [];
+            var dto = await _subscriptionPlanManager.GetEntitiesAsync("SubscriptionPlan/plans") ?? [];
             var entities = dto.Select(CachedSubscriptionPlan.FromDto).ToList();
             ShowPlans(entities);
             await _localDb.SaveSubscriptionPlansAsync(entities);
@@ -110,9 +110,9 @@ public partial class HomePageModel(EntityManager<GetSubscriptionPlanDto, string>
     {
         Name = plan.Name,
         Price = FormatPrice(plan.Price, plan.Currency),
-        Description = BillingDescription(plan.DurationInMonths, plan.MonthlyCreditAmount),
+        Description = BillingDescription(plan.DurationInMonths, plan.WeeklyCreditAmount),
         // Highlight the richer (effectively unlimited) plans, like the old mock did.
-        Featured = plan.MonthlyCreditAmount >= 999
+        Featured = plan.WeeklyCreditAmount >= 999
     };
 
     private static string FormatPrice(decimal price, string currency)
@@ -127,7 +127,7 @@ public partial class HomePageModel(EntityManager<GetSubscriptionPlanDto, string>
         return $"{symbol}{price.ToString("0.##", CultureInfo.InvariantCulture)}";
     }
 
-    private static string BillingDescription(int durationInMonths, int monthlyCreditAmount)
+    private static string BillingDescription(int durationInMonths, int weeklyCreditAmount)
     {
         string billing = durationInMonths switch
         {
@@ -135,9 +135,9 @@ public partial class HomePageModel(EntityManager<GetSubscriptionPlanDto, string>
             12 => "jaarlijks gefactureerd",
             _ => $"per {durationInMonths} maanden gefactureerd"
         };
-        string credits = monthlyCreditAmount >= 999
+        string credits = weeklyCreditAmount >= 999
             ? "Onbeperkt trainen"
-            : $"{monthlyCreditAmount} credits per maand";
+            : $"{weeklyCreditAmount} credits per week";
         return $"{credits}, {billing}";
     }
 }

@@ -53,7 +53,7 @@ public class AthleteDbContext(DbContextOptions<AthleteDbContext> options) : DbCo
             builder.Property(sp => sp.Name).HasColumnName("name");
             builder.Property(sp => sp.Price).HasColumnName("price");
             builder.Property(sp => sp.DurationInMonths).HasColumnName("durationInMonths");
-            builder.Property(sp => sp.MonthlyCreditAmount).HasColumnName("monthlyCreditAmount");
+            builder.Property(sp => sp.WeeklyCreditAmount).HasColumnName("weeklyCreditAmount");
             builder.Property(sp => sp.Currency).HasColumnName("paymentCurrency").HasConversion<string>();
             builder.Property(sp => sp.PaymentMethods).HasColumnName("paymentMethod")
                    .HasConversion(PaymentMethodConversion.Converter, PaymentMethodConversion.Comparer);

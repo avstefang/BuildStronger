@@ -7,8 +7,8 @@ namespace Domain.Enum;
 public enum EmailType
 {
     WelcomeEmail,
-    PasswordResetEmail,
     SubscriptionSucceededEmail,
     SubscriptionExpiredEmail,
-    SubscriptionFailedEmail
+    SubscriptionFailedEmail,
+    WaitlistAcceptedEmail
 }

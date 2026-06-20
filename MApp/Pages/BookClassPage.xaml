@@ -62,6 +62,32 @@
                        IsVisible="{Binding SelectedBike, Converter={StaticResource IsNotNullConverter}}" />
             </VerticalStackLayout>
 
+            <!-- Aangemelde leden -->
+            <VerticalStackLayout Spacing="{StaticResource LayoutSpacing}" IsVisible="{Binding HasParticipants}">
+                <Label Text="Aangemelde leden" Style="{StaticResource Title2}" Margin="0,8,0,0" />
+                <CollectionView ItemsSource="{Binding Participants}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Participant">
+                            <HorizontalStackLayout Spacing="12" Padding="0,4">
+                                <Grid WidthRequest="40" HeightRequest="40">
+                                    <!-- Uploaded photo (clipped to a circle), shown once downloaded -->
+                                    <Border WidthRequest="40" HeightRequest="40" Padding="0" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 20" IsVisible="{Binding HasPhoto}">
+                                        <Image Source="{Binding PhotoPath}" Aspect="AspectFill"
+                                               WidthRequest="40" HeightRequest="40" />
+                                    </Border>
+                                    <!-- Default icon when there's no photo -->
+                                    <Image WidthRequest="40" HeightRequest="40" Source="{StaticResource IconAccount}"
+                                           IsVisible="{Binding HasPhoto, Converter={StaticResource InvertedBoolConverter}}" />
+                                </Grid>
+                                <Label Text="{Binding Username}" VerticalOptions="Center"
+                                       Style="{StaticResource Body1}" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
             <!-- Actions -->
             <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Error}" Margin="0,12,0,0"
                    IsVisible="{Binding ErrorMessage, Converter={StaticResource IsStringNotNullOrEmptyConverter}}" />

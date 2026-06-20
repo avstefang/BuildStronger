@@ -29,8 +29,8 @@
                             </VerticalStackLayout>
                             <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center" HorizontalOptions="End">
                                 <Label Text="{Binding SpotsLabel}" Style="{StaticResource Caption1Strong}" HorizontalTextAlignment="End" />
-                                <Button Text="Boeken"
-                                        IsEnabled="{Binding IsFull, Converter={StaticResource InvertedBoolConverter}}"
+                                <Button Text="{Binding BookButtonText}"
+                                        IsEnabled="{Binding IsBookable}"
                                         Command="{Binding BookClassCommand, Source={RelativeSource AncestorType={x:Type pageModels:PlanningPageModel}}, x:DataType=pageModels:PlanningPageModel}"
                                         CommandParameter="{Binding .}" />
                             </VerticalStackLayout>

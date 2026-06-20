@@ -72,6 +72,7 @@ builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IEquipmentRoomRepository, EquipmentRoomRepository>();
 builder.Services.AddScoped<IEquipmentSpotRepository, EquipmentSpotRepository>();
+builder.Services.AddScoped<IEquipmentSpotReservationRepository, EquipmentSpotReservationRepository>();
 
 // Infrastructure
 builder.Services.AddScoped<IPaymentProcessor, PaymentProcessor>();

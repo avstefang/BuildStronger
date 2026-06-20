@@ -17,7 +17,7 @@ public class CachedSubscriptionPlan
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public int DurationInMonths { get; set; }
-    public int MonthlyCreditAmount { get; set; }
+    public int WeeklyCreditAmount { get; set; }
     // Stored in SQLite as one comma-separated string, e.g. "iDEAL,Wero".
     public string PaymentMethods { get; set; } = string.Empty;
 
@@ -42,7 +42,7 @@ public class CachedSubscriptionPlan
         Name = dto.Name,
         Price = dto.Price,
         DurationInMonths = dto.DurationInMonths,
-        MonthlyCreditAmount = dto.MonthlyCreditAmount,
+        WeeklyCreditAmount = dto.WeeklyCreditAmount,
         PaymentMethods = dto.PaymentMethod,
         Currency = dto.Currency
     };

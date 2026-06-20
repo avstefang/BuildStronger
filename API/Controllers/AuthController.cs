@@ -3,6 +3,7 @@ using Application.Interface;
 using Application.Mapping;
 using Application.Service;
 using Domain.Entity;
+using Domain.Repository;
 using Domain.Value_object;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -35,6 +36,10 @@ public class AuthController(AthleteService athleteService, ITokenService tokenSe
             GetAthleteDto registeredAthlete = athlete?.ToDto() ?? throw new InvalidOperationException("Failed to create athlete");
 
             return Ok(registeredAthlete);
+        }
+        catch (AthleteAlreadyExistsException ex)
+        {
+            return Conflict(new { error = ex.Message });
         }
         catch (ArgumentException ex)
         {

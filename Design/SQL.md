@@ -51,7 +51,7 @@
     - name: NOT NULL, Unique
     - price: NOT NULL, DECIMAL
     - durationInMonths: INT, NOT NULL
-    - monthlyCreditAmount: NOT NULL, INT
+    - weeklyCreditAmount: NOT NULL, INT
     - paymentMethod: NOT NULL, ENUM, Default Wero (others to come later)
     - paymentCurrency: NOT NULL, ENUM default eur
 * payment

@@ -20,6 +20,8 @@
     <x:Static x:Key="Error" Member="styles:ThemeColors.Error" />
     <x:Static x:Key="Info" Member="styles:ThemeColors.Info" />
 
+    <x:Static x:Key="PrimaryRed" Member="styles:ThemeColors.PrimaryRed" />
+
     <Color x:Key="PrimaryDarkText">#242424</Color>
     <Color x:Key="SecondaryDarkText">#EF9A9A</Color>
 

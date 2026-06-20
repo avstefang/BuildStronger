@@ -10,6 +10,9 @@ public class Lesson
     // Nullable: the customDuration column is NULL when the lesson uses the workout's own duration.
     public int? CustomDuration { get; private set; }
     public int MaxCapacity { get; private set; }
+    // The instructor lives in another aggregate (athlete table); this FK is loaded with the lesson,
+    // while the Instructor navigation is populated separately (see the services).
+    public Guid? InstructorId { get; private set; }
     public Instructor? Instructor { get; private set; } = null;
     public Room Room { get; private set; } = null!;
 
@@ -31,6 +34,7 @@ public class Lesson
     public void AssignInstructor(Instructor instructor)
     {
         Instructor = instructor;
+        InstructorId = instructor.Athlete.Id;
     }
 
     public void UpdateCustomDuration(int duration)

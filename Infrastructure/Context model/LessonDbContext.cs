@@ -18,7 +18,7 @@ public class LessonDbContext(DbContextOptions<LessonDbContext> contextOptions) :
             builder.ToTable("lesson");
             builder.Property(l => l.MaxCapacity).HasColumnName("maxCapacity");
             builder.Property(l => l.CustomDuration).HasColumnName("customDuration");
-            builder.Property<Guid?>("InstructorId").HasColumnName("instructorId").IsRequired(false);
+            builder.Property(l => l.InstructorId).HasColumnName("instructorId").IsRequired(false);
             builder.Ignore(l => l.Instructor);
             builder.HasOne(l => l.Workout)
                    .WithMany()

@@ -49,6 +49,11 @@ namespace MApp
 
             builder.Services.AddSingleton<IAuthService, AuthService>();
 
+            builder.Services.AddSingleton<PhotoService>();
+
+            // Automatic geofence check-in (runs a once-a-minute presence check while the app is open)
+            builder.Services.AddSingleton<PresenceService>();
+
             // On-device SQLite cache (subscription plans, etc.)
             builder.Services.AddSingleton<LocalDbService>();
 

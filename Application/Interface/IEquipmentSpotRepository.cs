@@ -9,6 +9,8 @@ public interface IEquipmentSpotRepository
 {
     Task<EquipmentSpot?> GetEquipmentSpotByIdAsync(Guid equipmentSpotId);
     Task<EquipmentSpot?> GetEquipmentSpotByNameAsync(string equipmentName);
+    Task<EquipmentSpot?> GetEquipmentSpotByPositionAsync(Guid roomId, int rowNumber, int spotNumber);
+    Task<bool> RoomHasSpotsAsync(Guid roomId);
     Task<IEnumerable<EquipmentSpot>?> GetAllEquipmentSpotsAsync();
     Task AddEquipmentSpotAsync(EquipmentSpot equipmentSpot);
     Task UpdateEquipmentSpotAsync(EquipmentSpot equipmentSpot);

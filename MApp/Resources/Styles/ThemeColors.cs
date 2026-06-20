@@ -15,6 +15,8 @@ public static class ThemeColors
     public static readonly Color PrimaryLight = Color.FromArgb(Shared.PrimaryLight);
     public static readonly Color OnPrimary = Color.FromArgb(Shared.OnPrimary);
 
+    public static readonly Color PrimaryRed = Color.FromArgb(Shared.PrimaryRed);
+
     public static readonly Color Secondary = Color.FromArgb(Shared.Secondary);
 
     public static readonly Color Background = Color.FromArgb(Shared.Background);

@@ -22,7 +22,44 @@ public class LocalDbService
         _db = new SQLiteAsyncConnection(path);
         await _db.CreateTableAsync<CachedSubscriptionPlan>();
         await _db.CreateTableAsync<MemberProfile>();
+        await _db.CreateTableAsync<CachedGymClass>();
+        await _db.CreateTableAsync<CachedBooking>();
         return _db;
+    }
+
+    public async Task<List<CachedGymClass>> GetLessonsAsync()
+    {
+        var db = await GetConnectionAsync();
+        return await db.Table<CachedGymClass>().ToListAsync();
+    }
+
+    /// <summary>Replaces the cached planning lessons with a fresh copy from the API.</summary>
+    public async Task SaveLessonsAsync(IEnumerable<CachedGymClass> lessons)
+    {
+        var db = await GetConnectionAsync();
+        await db.DeleteAllAsync<CachedGymClass>();
+        await db.InsertAllAsync(lessons);
+    }
+
+    public async Task<List<CachedBooking>> GetBookingsAsync()
+    {
+        var db = await GetConnectionAsync();
+        return await db.Table<CachedBooking>().ToListAsync();
+    }
+
+    /// <summary>Replaces the cached bookings with a fresh copy from the API.</summary>
+    public async Task SaveBookingsAsync(IEnumerable<CachedBooking> bookings)
+    {
+        var db = await GetConnectionAsync();
+        await db.DeleteAllAsync<CachedBooking>();
+        await db.InsertAllAsync(bookings);
+    }
+
+    /// <summary>Drops the cached bookings so the next load fetches fresh (after a book or cancel).</summary>
+    public async Task ClearBookingsAsync()
+    {
+        var db = await GetConnectionAsync();
+        await db.DeleteAllAsync<CachedBooking>();
     }
 
     public async Task<List<CachedSubscriptionPlan>> GetSubscriptionPlansAsync()
@@ -51,5 +88,11 @@ public class LocalDbService
         var db = await GetConnectionAsync();
         await db.DeleteAllAsync<MemberProfile>();
         await db.InsertAsync(athlete);
+    }
+
+    public async Task ClearAthleteAsync()
+    {
+        var db = await GetConnectionAsync();
+        await db.DeleteAllAsync<MemberProfile>();
     }
 }

@@ -28,6 +28,9 @@ public class ScheduledJobsService(IServiceScopeFactory scopeFactory, ILogger<Sch
                 await subscriptionService.ActivateLatentSubscriptionAsync();
                 logger.LogInformation("Activated latent subscriptions at {Time}", DateTime.UtcNow);
 
+                await subscriptionService.ExpireSubscriptionsAsync();
+                logger.LogInformation("Expired ended subscriptions at {Time}", DateTime.UtcNow);
+
                 var reservationService = scope.ServiceProvider.GetRequiredService<ReservationService>();
                 await reservationService.AutoAcceptWaitlistReservationsAsync();
                 logger.LogInformation("Processed reservation waitlist at {Time}", DateTime.UtcNow);

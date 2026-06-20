@@ -41,7 +41,7 @@ public class LessonRepository(LessonDbContext dbContext) : Repository<Lesson, Gu
     public async Task<IEnumerable<Lesson>?> GetLessonsByInstructorIdAsync(Guid instructorId)
     {
         return await LessonsWithIncludes()
-            .Where(l => EF.Property<Guid>(l, "InstructorId") == instructorId)
+            .Where(l => l.InstructorId == instructorId)
             .ToListAsync();
     }
 

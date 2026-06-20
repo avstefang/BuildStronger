@@ -30,6 +30,9 @@ public class Booking
     public string DayLabel => Start.ToString("ddd d MMM", Dutch);
     public bool IsUpcoming => Start >= DateTime.Now;
 
+    /// <summary>A booking can only be cancelled until one hour before it starts.</summary>
+    public bool CanCancel => Start > DateTime.Now.AddHours(1);
+
     /// <summary>Maps a reservation from the API into the shape the Bookings page binds to.</summary>
     public static Booking FromDto(GetReservationDto dto)
     {
@@ -41,7 +44,8 @@ public class Booking
             ClassName = dto.Lesson.Workout.Name,
             Room = dto.Lesson.Room.Name,
             Instructor = string.IsNullOrWhiteSpace(dto.Lesson.Instructor?.FullName) ? "Nog onbekend" : dto.Lesson.Instructor!.FullName,
-            Start = dto.ReservationDate,
+            // reservationDate is stored as a DATE (no time), so combine it with the lesson's start time.
+            Start = dto.ReservationDate.Date.Add(dto.Lesson.Schedule.StartTime.ToTimeSpan()),
             DurationMinutes = duration,
             Status = TranslateStatus(dto.Status)
         };

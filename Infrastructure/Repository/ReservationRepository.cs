@@ -22,7 +22,11 @@ public class ReservationRepository(ReservationDbContext dbContext) : Repository<
 
     public async Task<IEnumerable<Reservation>?> GetAllReservationsByLessonIdAsync(Guid lessonId)
     {
+        // No-tracking: this read feeds the capacity check in ReserveLessonAsync. If the
+        // included Lesson were tracked, attaching the (different) Lesson instance that comes
+        // from LessonDbContext in AddReservationAsync would throw an identity conflict.
         return await ReservationsWithIncludes()
+            .AsNoTracking()
             .Where(r => r.Lesson.Id == lessonId)
             .ToListAsync();
     }
@@ -37,7 +41,7 @@ public class ReservationRepository(ReservationDbContext dbContext) : Repository<
     public async Task<IEnumerable<Reservation>?> GetAllReservationsByEmailAsync(EmailAddress email)
     {
         return await ReservationsWithIncludes()
-            .Where(r => EF.Property<Guid>(r, "AthleteId") ==
+            .Where(r => r.AthleteId ==
                 DbContext.Set<Athlete>()
                     .Where(a => a.EmailAddress.Address == email.Address)
                     .Select(a => a.Id)
@@ -48,6 +52,18 @@ public class ReservationRepository(ReservationDbContext dbContext) : Repository<
     public async Task<IEnumerable<Reservation>?> GetAllReservationsAsync()
     {
         return await ReservationsWithIncludes().ToListAsync();
+    }
+
+    // Accepted reservations per lesson for today onwards, in one grouped query, so the planning can
+    // show real availability. Past (stale) reservations are excluded so they don't keep "filling" a
+    // recurring lesson. Keyed by lesson id; lessons with no bookings are simply absent from the map.
+    public async Task<Dictionary<Guid, int>> GetAcceptedCountsByLessonAsync()
+    {
+        return await DbContext.Set<Reservation>()
+            .Where(r => r.Status == ReservationStatus.Accepted && r.ReservationDate >= DateTime.Today)
+            .GroupBy(r => r.Lesson.Id)
+            .Select(g => new { LessonId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.LessonId, g => g.Count);
     }
 
     public async Task<int> GetReservationSpotsLeftAsync(Guid lessonId)
@@ -63,8 +79,7 @@ public class ReservationRepository(ReservationDbContext dbContext) : Repository<
 
     public async Task AddReservationAsync(Reservation reservation)
     {
-        // Athlete is ignored in this context — set the FK shadow property manually
-        DbContext.Entry(reservation).Property("AthleteId").CurrentValue = reservation.Athlete.Id;
+        // AthleteId is set in the Reservation constructor; the Athlete navigation stays ignored here.
 
         // Lesson comes from LessonDbContext — attach it (cascades to Workout, Room, Schedule)
         if (DbContext.Entry(reservation.Lesson).State == EntityState.Detached)
@@ -75,5 +90,12 @@ public class ReservationRepository(ReservationDbContext dbContext) : Repository<
 
     public async Task UpdateReservationAsync(Reservation reservation) => await UpdateAsync(reservation);
 
-    public async Task DeleteReservationAsync(Guid id) => await DeleteAsync(id);
+    public async Task DeleteReservationAsync(Guid id)
+    {
+        Reservation? reservation = await GetReservationByIdAsync(id);
+        if (reservation == null) return;
+
+        DbContext.Set<Reservation>().Remove(reservation);
+        await DbContext.SaveChangesAsync();
+    }
 }

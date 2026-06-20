@@ -81,6 +81,27 @@ public class Subscription
 
     public DateOnly GetEndDate() => StartDate.AddMonths(SubscriptionPlan.DurationInMonths);
 
+    // The member already paid through the end date, so a cancelled subscription still
+    // grants access until then. Active subscriptions always grant access here; the
+    // expiry job is what ends them once the end date passes.
+    public bool GrantsAccessOn(DateOnly date)
+    {
+        if (Status == SubscriptionStatus.Active) return true;
+        if (Status == SubscriptionStatus.Cancelled) return date <= GetEndDate();
+        return false;
+    }
+
+    /// <summary>
+    /// The weekly credit window (Monday–Sunday) containing <paramref name="onDate"/>.
+    /// Credits reset every Monday, regardless of the subscription's start date.
+    /// </summary>
+    public (DateOnly Start, DateOnly End) GetCreditPeriod(DateOnly onDate)
+    {
+        int daysSinceMonday = ((int)onDate.DayOfWeek + 6) % 7; // Monday = 0 … Sunday = 6
+        DateOnly start = onDate.AddDays(-daysSinceMonday);
+        return (start, start.AddDays(7));
+    }
+
     public void LoadSubscriptionPlan(SubscriptionPlan subscriptionPlan)
     {
         if (SubscriptionPlan != null)

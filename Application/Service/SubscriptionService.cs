@@ -1,6 +1,7 @@
 ﻿using Application.Dto;
 using Application.Interface;
 using Application.Mapping;
+using Application.Template;
 using Domain.Entity;
 using Domain.Enum;
 using Domain.Exception;
@@ -16,7 +17,8 @@ public class SubscriptionService(
     ISubscriptionRepository subscriptionRepository,
     IAthleteRepository athleteRepository,
     IPaymentRepository paymentRepository,
-    IPaymentProcessor paymentProcessor
+    IPaymentProcessor paymentProcessor,
+    IEmailSender? emailSender = null
 )
 {
     private readonly ISubscriptionPlanRepository _subscriptionPlanRepository = subscriptionPlanRepository;
@@ -24,6 +26,20 @@ public class SubscriptionService(
     private readonly IAthleteRepository _athleteRepository = athleteRepository;
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IPaymentProcessor _paymentProcessor = paymentProcessor;
+    private readonly IEmailSender? _emailSender = emailSender;
+
+    // Best-effort notification: a mail failure must never break the subscription flow.
+    private async Task SendEmailSafelyAsync(Athlete athlete, EmailContentDto content)
+    {
+        if (_emailSender is null)
+            return;
+
+        try
+        {
+            await _emailSender.SendEmailAsync(athlete.FullName, athlete.EmailAddress, content.Subject, content.Body);
+        }
+        catch { /* swallow: notification is non-critical */ }
+    }
 
     public async Task<IEnumerable<GetSubscriptionDto>> GetAthleteSubscriptionsAsync(EmailAddress emailAddress)
     {
@@ -68,6 +84,12 @@ public class SubscriptionService(
         await _paymentRepository.CreatePaymentAsync(payment);
 
         athlete.AddSubscription(subscription);
+
+        // Confirm the outcome by email.
+        await SendEmailSafelyAsync(athlete, processorId != null
+            ? EmailTemplate.SubscriptionSucceededEmail(athlete.FullName)
+            : EmailTemplate.SubscriptionFailedEmail(athlete.FullName));
+
         return athlete.ToDto();
     }
 
@@ -98,6 +120,31 @@ public class SubscriptionService(
 
         subscription.CancelSubscription();
         await _subscriptionRepository.UpdateSubscriptionStatusAsync(subscription);
+    }
+
+    // Marks active subscriptions whose end date has passed as expired and notifies the member.
+    // Loaded and saved via the athlete repository (same context) so the status change persists cleanly.
+    public async Task ExpireSubscriptionsAsync()
+    {
+        DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+        IEnumerable<Athlete> athletes = await _athleteRepository.GetAllAthletesAsync();
+
+        foreach (Athlete athlete in athletes)
+        {
+            List<Subscription> expired = athlete.Subscriptions
+                .Where(s => s.Status == SubscriptionStatus.Active && s.GetEndDate() < today)
+                .ToList();
+            if (expired.Count == 0)
+                continue;
+
+            foreach (Subscription subscription in expired)
+            {
+                subscription.ExpireSubscription();
+                await SendEmailSafelyAsync(athlete, EmailTemplate.SubscriptionExpiredEmail(athlete.FullName));
+            }
+
+            await _athleteRepository.UpdateAthleteAsync(athlete);
+        }
     }
 
     public async Task ActivateLatentSubscriptionAsync()

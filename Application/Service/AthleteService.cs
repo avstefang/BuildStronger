@@ -41,8 +41,12 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         // Send a welcome email if email sender is provided
         if (_emailSender != null)
         {
-            EmailContentDto template = EmailTemplate.WelcomeEmail(athlete.FullName);
-            await _emailSender.SendEmailAsync(athlete.EmailAddress, template.Subject, template.Body);
+            try
+            {
+                EmailContentDto template = EmailTemplate.WelcomeEmail(athlete.FullName);
+                await _emailSender.SendEmailAsync(athlete.FullName, athlete.EmailAddress, template.Subject, template.Body);
+            }
+            catch { }
         }
 
         return athlete;
@@ -93,11 +97,20 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
         return athlete;
     }
 
-    public async Task<GetAthleteDto?> GetAthleteByEmail(EmailAddress emailAddress)
+    public async Task UploadPhotoAsync(EmailAddress email, string photoPath)
+    {
+        Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email);
+        if (athlete == null)
+            throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
+        athlete.ChangePhotoPath(new PhotoPath(photoPath));
+        await _athleteRepository.UpdateAthleteAsync(athlete);
+    }
+
+    public async Task<Athlete?> GetAthleteByEmailAsync(EmailAddress emailAddress)
     {
         try
         {
-            return (await _athleteRepository.GetAthleteByEmailAsync(emailAddress))?.ToDto();
+            return (await _athleteRepository.GetAthleteByEmailAsync(emailAddress));
         }
         catch (AthleteNotFoundException)
         {
@@ -175,7 +188,7 @@ public class AthleteService(IAthleteRepository athleteRepository, IPasswordCrypt
     {
         Athlete? athlete = await _athleteRepository.GetAthleteByEmailAsync(email) ??
             throw new AthleteNotFoundException($"Athlete with email address {email.Address} not found");
-        athlete.PhotoPath = new PhotoPath(photoPath);
+        athlete.ChangePhotoPath(new PhotoPath(photoPath));
         await _athleteRepository.UpdateAthleteAsync(athlete);
     }
 

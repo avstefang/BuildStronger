@@ -13,7 +13,7 @@ public class Athlete
     public string Password { get; private set; }
     public Role Role { get; private set; } = Role.User;
     public string Username { get; private set; } = string.Empty;
-    public PhotoPath? PhotoPath { get; set; } = null;
+    public PhotoPath? PhotoPath { get; private set; } = null;
     public IReadOnlyList<Subscription> Subscriptions => _subscriptions;
 
     protected Athlete()
@@ -80,7 +80,7 @@ public class Athlete
     }
 
     public Subscription? GetActiveSubscription() =>
-        _subscriptions.FirstOrDefault(s => s.Status == SubscriptionStatus.Active);
+        _subscriptions.FirstOrDefault(s => s.GrantsAccessOn(DateOnly.FromDateTime(DateTime.UtcNow)));
 
     public Subscription? GetLastSubscription() =>
         _subscriptions.OrderByDescending(s => s.StartDate).FirstOrDefault() ?? null;
@@ -115,5 +115,12 @@ public class Athlete
             throw new ArgumentException("New full name must be different from the current one.", nameof(newFullName));
 
         FullName = newFullName;
+    }
+
+    public void ChangePhotoPath(PhotoPath? newPhotoPath)
+    {
+        if (PhotoPath == newPhotoPath)
+            throw new ArgumentException("New photo path must be different from the current one.", nameof(newPhotoPath));
+        PhotoPath = newPhotoPath;
     }
 }

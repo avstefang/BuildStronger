@@ -19,9 +19,6 @@ public partial class ChangeSubscriptionPageModel(EntityManager<GetSubscriptionDt
     private string _rawStatus = string.Empty;
 
     [ObservableProperty]
-    private bool _hasSubscription;
-
-    [ObservableProperty]
     private string _planName = string.Empty;
 
     [ObservableProperty]
@@ -45,6 +42,12 @@ public partial class ChangeSubscriptionPageModel(EntityManager<GetSubscriptionDt
     [ObservableProperty]
     private string? _errorMessage;
 
+    [ObservableProperty]
+    private bool _showCancelOption = true;
+
+    [ObservableProperty]
+    private bool _showAutomaticRenewalOption = true;
+
     /// <summary>Activation is offered only for a waiting subscription whose start date has arrived.</summary>
     public bool CanActivate => _rawStatus == "WaitingActivation" && _startDate <= DateOnly.FromDateTime(DateTime.Today);
 
@@ -66,9 +69,14 @@ public partial class ChangeSubscriptionPageModel(EntityManager<GetSubscriptionDt
             }
 
             GetSubscriptionDto? sub = await _subscriptionManager.GetEntityAsync("Subscription", token);
-            HasSubscription = sub is not null;
             if (sub is null)
                 return;
+
+            if (sub.Status == "Cancelled")
+            {
+                ShowCancelOption = false;
+                ShowAutomaticRenewalOption = false;
+            }
 
             PlanName = sub.SubscriptionPlan.Name;
             PriceText = FormatPrice(sub.SubscriptionPlan.Price, sub.SubscriptionPlan.Currency);
@@ -83,6 +91,7 @@ public partial class ChangeSubscriptionPageModel(EntityManager<GetSubscriptionDt
             if (null == athlete) return;
 
             athlete.Status = sub.Status;
+            athlete.IsAutoRenewalEnabled = sub.AutoRenew;
             await _localDbService.SaveAthleteAsync(athlete);
         }
         catch
@@ -113,12 +122,12 @@ public partial class ChangeSubscriptionPageModel(EntityManager<GetSubscriptionDt
             if (string.IsNullOrWhiteSpace(token))
                 return;
 
-            await _subscriptionManager.UpdateEntityNoResponseAsync(
-                $"Subscription/autorenew/{(enable ? "true" : "false")}", token, new object());
+            await _subscriptionManager.UpdateEntityAsync(
+                $"Subscription/autorenew/{(enable ? "true" : "false")}", null, token, false);
         }
-        catch
+        catch (Exception ex)
         {
-            ErrorMessage = "Automatische verlenging bijwerken is mislukt.";
+            ErrorMessage = $"Automatische verlenging bijwerken is mislukt. {ex.Message}";
         }
     }
 
@@ -133,7 +142,7 @@ public partial class ChangeSubscriptionPageModel(EntityManager<GetSubscriptionDt
             if (string.IsNullOrWhiteSpace(token))
                 return;
 
-            await _subscriptionManager.UpdateEntityNoResponseAsync("Subscription/cancel", token, new object());
+            await _subscriptionManager.UpdateEntityAsync("Subscription/cancel", new object(), token, false);
             await LoadAsync();
         }
         catch
@@ -157,7 +166,7 @@ public partial class ChangeSubscriptionPageModel(EntityManager<GetSubscriptionDt
             if (string.IsNullOrWhiteSpace(token))
                 return;
 
-            await _subscriptionManager.UpdateEntityNoResponseAsync("Subscription/activatewaiting", token, new object());
+            await _subscriptionManager.UpdateEntityAsync("Subscription/activatewaiting", new object(), token, false);
             await LoadAsync();
         }
         catch (Exception ex)

@@ -10,4 +10,5 @@ public class GetLessonDto
     public int CustomDuration { get; init; }
     public int MaxCapacity { get; init; }
     public TimeOnly EndTime { get; init; }
+    public int BookedCount { get; init; }
 }

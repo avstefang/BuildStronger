@@ -22,6 +22,20 @@ public class EquipmentSpotRepository(EquipmentSpotDbContext dbContext) : Reposit
         return await SpotsWithIncludes().FirstOrDefaultAsync(e => e.Equipment.Name == equipmentName);
     }
 
+    public async Task<EquipmentSpot?> GetEquipmentSpotByPositionAsync(Guid roomId, int rowNumber, int spotNumber)
+    {
+        return await SpotsWithIncludes().FirstOrDefaultAsync(e =>
+            e.EquipmentRoom.Room.Id == roomId &&
+            e.EquipmentPosition.RowNumber == rowNumber &&
+            e.EquipmentPosition.SpotNumber == spotNumber);
+    }
+
+    // True only for rooms with an actual spot grid (e.g. spinning bikes). Mats/gloves have no spots.
+    public async Task<bool> RoomHasSpotsAsync(Guid roomId)
+    {
+        return await DbContext.Set<EquipmentSpot>().AnyAsync(e => e.EquipmentRoom.Room.Id == roomId);
+    }
+
     public async Task<IEnumerable<EquipmentSpot>?> GetAllEquipmentSpotsAsync()
     {
         return await SpotsWithIncludes().ToListAsync();

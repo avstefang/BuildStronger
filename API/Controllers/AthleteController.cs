@@ -68,12 +68,12 @@ public class AthleteController(AthleteService athleteService) : ControllerBase
         try
         {
             EmailAddress emailAddress = new(email);
-            GetAthleteDto? athlete = await athleteService.GetAthleteByEmail(emailAddress);
+            Athlete? athlete = await athleteService.GetAthleteByEmailAsync(emailAddress);
 
             if (athlete == null)
                 return NotFound(new { error = "Athlete not found" });
 
-            return Ok(athlete);
+            return Ok(athlete.ToDto());
         }
         catch (Exception ex)
         {

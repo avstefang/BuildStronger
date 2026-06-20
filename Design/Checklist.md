@@ -56,29 +56,29 @@
 - [ ] Broncode en GUI zijn Engelstalig en voor een internationale doelgroep
 - [ ] Maak gebruik van sensoren
 - [ ] Bevat de volgende elementen:
-    - [ ] Aanmelden en aangemeldt blijven
-    - [ ] Status abonnement inzien
-    - [ ] Profiel bekijken
-    - [ ] Profiel bewerken (foto uploaden, gebruikersnaam opgeven)
-    - [ ] Abonnement toevoegen (vóór einde jaarabonnement kan opnieuw aangeschaft worden en krijgen daar 6 weken van tevoren een notificatie over)
-    - [ ] Abonnement bekijken
-    - [ ] Abonnement aanpassen (bijv. van 2x in de week naar onbeperkt)
-    - [ ] Abonnement verlengen
-    - [ ] Abonnement annuleren (jaarabonementen kunnen niet stopgezet/terug gedraait worden)
-    - [ ] Reserveren van lessen
-    - [ ] Abonneren op de wachtlijst als een les vol is
-    - [ ] Fiets reserveren bij spinninglessen
-    - [ ] Notificatie sturen als iemand zich af heeft gemeld en van de wachtlijst af bent gehaald
-    - [ ] iDEAL/Wero betaling mag worden gesimuleerd, liefst met Stripe developer
-    - [ ] Lesrooster kan meerdere dagen van tevoren vooruit worden bekeken, maar reserveren kan tot 1 week van tevoren
+    - [X] Aanmelden en aangemeldt blijven
+    - [X] Status abonnement inzien
+    - [X] Profiel bekijken
+    - [X] Profiel bewerken (foto uploaden, gebruikersnaam opgeven)
+    - [X] Abonnement toevoegen (vóór einde jaarabonnement kan opnieuw aangeschaft worden en krijgen daar 6 weken van tevoren een notificatie over)
+    - [X] Abonnement bekijken
+    - [X] Abonnement aanpassen (bijv. van 2x in de week naar onbeperkt)
+    - [X] Abonnement verlengen
+    - [X] Abonnement annuleren (jaarabonementen kunnen niet stopgezet/terug gedraait worden)
+    - [X] Reserveren van lessen
+    - [X] Abonneren op de wachtlijst als een les vol is
+    - [X] Fiets reserveren bij spinninglessen
+    - [X] Notificatie sturen als iemand zich af heeft gemeld en van de wachtlijst af bent gehaald
+    - [X] iDEAL/Wero betaling mag worden gesimuleerd, liefst met Stripe developer
+    - [X] Lesrooster kan meerdere dagen van tevoren vooruit worden bekeken, maar reserveren kan tot 1 week van tevoren
     - [ ] Per les kun je de aangemelde leden en gebruikersnaam en profielfoto zien
-    - [ ] Les reserveren kan, mits je genoeg credits hebt
-    - [ ] Spinningles kan je een specifieke plek reserveren
-    - [ ] Je kan je aanmelden voor een wachtlijst en ook weer verwijderen
-    - [ ] Afmelden voor een les kan tot maximaal 1 uur van tevoren en leden op de wachtlijst krijgen dan een notificatie dat de plek vrij is
+    - [X] Les reserveren kan, mits je genoeg credits hebt
+    - [X] Spinningles kan je een specifieke plek reserveren
+    - [X] Je kan je aanmelden voor een wachtlijst en ook weer verwijderen
+    - [X] Afmelden voor een les kan tot maximaal 1 uur van tevoren en leden op de wachtlijst krijgen dan een notificatie dat de plek vrij is
     - [ ] Je wordt automatisch aangemeldt als aanwezig op basis van GEO of met RFID als GEO niet beschikbaar is, instructeur kan zien wie er wel en niet is
-    - [ ] Een geschiedenis is in te zien van je historische lessen
-- [ ] Bevat de volgende lessen:
+    - [X] Een geschiedenis is in te zien van je historische lessen
+- [X] Bevat de volgende lessen:
     * Spinninglessen
     * Yoga
     * Bootcamp

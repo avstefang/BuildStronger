@@ -134,14 +134,14 @@ DECLARE @Yearly2xPlanRowId UNIQUEIDENTIFIER = NEWID();
 DECLARE @MonthlyUnlimitedPlanRowId UNIQUEIDENTIFIER = NEWID();
 DECLARE @YearlyUnlimitedPlanRowId UNIQUEIDENTIFIER = NEWID();
 
-INSERT INTO subscriptionPlan (id, name, price, durationInMonths, monthlyCreditAmount, paymentMethod, paymentCurrency)
-VALUES (@Monthly2xPlanRowId, '2x per week - maandelijks', 30.00, 1, 8, 'Wero', 'eur');
-INSERT INTO subscriptionPlan (id, name, price, durationInMonths, monthlyCreditAmount, paymentMethod, paymentCurrency)
-VALUES (@Yearly2xPlanRowId, '2x per week - jaarlijks', 299.00, 12, 96, 'Wero', 'eur');
-INSERT INTO subscriptionPlan (id, name, price, durationInMonths, monthlyCreditAmount, paymentMethod, paymentCurrency)
+INSERT INTO subscriptionPlan (id, name, price, durationInMonths, weeklyCreditAmount, paymentMethod, paymentCurrency)
+VALUES (@Monthly2xPlanRowId, '2x per week - maandelijks', 30.00, 1, 2, 'Wero', 'eur');
+INSERT INTO subscriptionPlan (id, name, price, durationInMonths, weeklyCreditAmount, paymentMethod, paymentCurrency)
+VALUES (@Yearly2xPlanRowId, '2x per week - jaarlijks', 299.00, 12, 2, 'Wero', 'eur');
+INSERT INTO subscriptionPlan (id, name, price, durationInMonths, weeklyCreditAmount, paymentMethod, paymentCurrency)
 VALUES (@MonthlyUnlimitedPlanRowId, 'Onbeperkt - maandelijks', 55.00, 1, 999, 'Wero', 'eur');
-INSERT INTO subscriptionPlan (id, name, price, durationInMonths, monthlyCreditAmount, paymentMethod, paymentCurrency)
-VALUES (@YearlyUnlimitedPlanRowId, 'Onbeperkt - jaarlijks', 549.00, 12, 9999, 'Wero', 'eur');
+INSERT INTO subscriptionPlan (id, name, price, durationInMonths, weeklyCreditAmount, paymentMethod, paymentCurrency)
+VALUES (@YearlyUnlimitedPlanRowId, 'Onbeperkt - jaarlijks', 549.00, 12, 999, 'Wero', 'eur');
 
 SELECT @Monthly2xPlanId = id FROM subscriptionPlan WHERE name = '2x per week - maandelijks';
 SELECT @Yearly2xPlanId = id FROM subscriptionPlan WHERE name = '2x per week - jaarlijks';

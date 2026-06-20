@@ -7,6 +7,9 @@ public class Reservation
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public Athlete Athlete { get; private set; }
+    // The Athlete navigation is ignored by EF (it's another aggregate); this FK is persisted and read,
+    // so services can look the athlete up (e.g. to email a member promoted off the waitlist).
+    public Guid AthleteId { get; private set; }
     public Lesson Lesson { get; private set; }
     public DateTime ReservationDate { get; private set; }
     public ReservationStatus Status { get; private set; } = ReservationStatus.Waitinglist;
@@ -21,6 +24,7 @@ public class Reservation
             throw new DomainException("A reservation cannot be made more than 7 days in advance.");
 
         Athlete = athlete;
+        AthleteId = athlete.Id;
         ReservationDate = reservationDate;
         Lesson = lesson;
     }

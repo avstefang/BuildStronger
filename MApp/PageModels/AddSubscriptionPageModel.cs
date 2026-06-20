@@ -58,7 +58,7 @@ public partial class AddSubscriptionPageModel(EntityManager<GetSubscriptionPlanD
                 IsLoading = false;
             }
 
-            var dto = await _planManager.GetEntitiesNoAuthAsync("SubscriptionPlan/plans") ?? [];
+            var dto = await _planManager.GetEntitiesAsync("SubscriptionPlan/plans") ?? [];
             _cachedPlans = dto.Select(CachedSubscriptionPlan.FromDto).ToList();
             RebuildPlans();
             await _localDb.SaveSubscriptionPlansAsync(_cachedPlans);

@@ -5,7 +5,7 @@ namespace Application.Mapping;
 
 public static class LessonMapping
 {
-    public static GetLessonDto ToDto(this Lesson lesson) => new()
+    public static GetLessonDto ToDto(this Lesson lesson, int bookedCount = 0) => new()
     {
         Id = lesson.Id,
         Workout = lesson.Workout.ToDto(),
@@ -14,6 +14,7 @@ public static class LessonMapping
         Instructor = lesson.Instructor?.Athlete.ToSummaryDto(),
         CustomDuration = lesson.CustomDuration ?? 0,
         MaxCapacity = lesson.MaxCapacity,
-        EndTime = lesson.GetEndTime()
+        EndTime = lesson.GetEndTime(),
+        BookedCount = bookedCount
     };
 }

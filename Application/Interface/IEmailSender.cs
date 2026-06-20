@@ -7,5 +7,5 @@ namespace Application.Interface;
 
 public interface IEmailSender
 {
-    Task SendEmailAsync(EmailAddress email, string subject, string htmlMessage);
+    Task SendEmailAsync(FullName fullName, EmailAddress email, string subject, string htmlMessage);
 }

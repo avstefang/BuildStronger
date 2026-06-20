@@ -77,6 +77,7 @@ public partial class PaymentPageModel(
             if (string.IsNullOrWhiteSpace(token))
             {
                 ErrorMessage = "Je sessie is verlopen. Log opnieuw in om je abonnement af te ronden.";
+                await Task.Delay(5000); // give the user a moment to read the message
                 return;
             }
 
@@ -89,14 +90,14 @@ public partial class PaymentPageModel(
                 AutoRenew = false
             };
 
-            await _subscriptionManager.CreateEntityAsync("Subscription", token, dto);
+            await _subscriptionManager.CreateEntityAsync("Subscription", dto, token);
 
             // The payment has been processed (succeeded or failed server-side).
             await FinishAsync();
         }
-        catch
+        catch (Exception ex)
         {
-            ErrorMessage = "Er ging iets mis bij het verwerken van je betaling. Probeer het opnieuw.";
+            ErrorMessage = $"Er ging iets mis bij het verwerken van je betaling. Probeer het opnieuw. {ex.Message}";
         }
         finally
         {
