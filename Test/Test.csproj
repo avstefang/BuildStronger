@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" Version="4.2.3" />
+    <PackageReference Include="NUnit" Version="4.6.1" />
+    <!-- Suppress MAUI Resizetizer build targets that are pulled in transitively via MApp -->
+    <PackageReference Include="Microsoft.Maui.Resizetizer" Version="10.0.71" ExcludeAssets="build;buildTransitive" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,8 +19,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Unit\" />
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\MApp\MApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="UI\" />
+    <Folder Include="Unit\" />
   </ItemGroup>
 
 </Project>

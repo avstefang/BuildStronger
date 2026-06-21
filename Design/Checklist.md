@@ -104,14 +104,23 @@
 - [ ] toelicht welke keuzes je hebt gemaakt in je ontwerp en realisatie
 - [ ] onderdelen van je realisatietraject waarop je trots bent
 
+### Punten
 
-0. Scrijf alles op in Ontwerpdocument Markdown, maar laat de structuur even voor wat het is. Dat komt later wel.
-1. Denk de SQL uit in Markdown en laat, als die (bijna) klaar is, Copilot ernaar kijken en de code genereren.
-2. Probeer de API/Blazor applicatie van tevoren zoveel mogelijk uit te denken en laat eventueel Copilot daarna ernaar kijken.
-3. Maak de API/Blazor combi, maar begin met de API.
-4. Maak de Blazor applicatie en laat eventueel wat HTML code genereren.
-5. Denk over hoe je het design wilt hebben van de C# applicatie.
-6. Maak het design van de C# applicatie in WPF Multiplatform. Hang er nog geen logica achter, maar hou er al wel meteen rekening mee zodat het later makkelijker te implementeren is.
-7. Denk de logica verder uit voor de backend van C#.
-8. Ga elke stap nog na om alles recht te trekken op wat er tot nu toe is gemaakt. Zolang de API goed uit is gedacht, zou dit niet veel werk meer moeten zijn.
-9. Als laatste, kijk naar het Ontwerpdocument. Er zou genoeg informatie moeten zijn door het klad gemaakt en de rest dat uit is gedacht en gemaakt om alles verder af te maken.
+- Applicatie voor sportclub Build Stronger
+- Naar mij toegekomen om sport applicatie te maken
+- Eigenaar wil een beheerportaal en een bruikbare applicatie die gebruikers kunnen downloaden
+- Doel is om meer klanten te trekken en sneller te woord kunnen te staan
+
+- Trots op het Onion model dat ik gerealiseerd heb en hoe ik de API uit heb gedacht
+
+
+1. Scrijf alles op in Ontwerpdocument Markdown, maar laat de structuur even voor wat het is. Dat komt later wel.
+2. Denk de SQL uit in Markdown en laat, als die (bijna) klaar is, Copilot ernaar kijken en de code genereren.
+3. Probeer de API/Blazor applicatie van tevoren zoveel mogelijk uit te denken en laat eventueel Copilot daarna ernaar kijken.
+4. Maak de API/Blazor combi, maar begin met de API.
+5. Maak de Blazor applicatie en laat eventueel wat HTML code genereren.
+6. Denk over hoe je het design wilt hebben van de C# applicatie.
+7. Maak het design van de C# applicatie in WPF Multiplatform. Hang er nog geen logica achter, maar hou er al wel meteen rekening mee zodat het later makkelijker te implementeren is.
+8. Denk de logica verder uit voor de backend van C#.
+9. Ga elke stap nog na om alles recht te trekken op wat er tot nu toe is gemaakt. Zolang de API goed uit is gedacht, zou dit niet veel werk meer moeten zijn.
+10. Als laatste, kijk naar het Ontwerpdocument. Er zou genoeg informatie moeten zijn door het klad gemaakt en de rest dat uit is gedacht en gemaakt om alles verder af te maken.
