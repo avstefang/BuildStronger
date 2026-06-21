@@ -3,18 +3,32 @@ using Domain.Value_object;
 
 namespace Domain.Entity;
 
-public class Athlete(EmailAddress emailAddress, FullName fullName, string password)
+public class Athlete
 {
     private readonly List<Subscription> _subscriptions = [];
 
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public required EmailAddress EmailAddress { get; set; } = emailAddress;
-    public required FullName FullName { get; set; } = fullName;
-    public string Password { get; private set; } = password;
+    public EmailAddress EmailAddress { get; private set; }
+    public FullName FullName { get; private set; }
+    public string Password { get; private set; }
     public Role Role { get; private set; } = Role.User;
     public string Username { get; private set; } = string.Empty;
-    public PhotoPath? PhotoPath { get; set; } = null;
+    public PhotoPath? PhotoPath { get; private set; } = null;
     public IReadOnlyList<Subscription> Subscriptions => _subscriptions;
+
+    protected Athlete()
+    {
+        EmailAddress = null!;
+        FullName = null!;
+        Password = null!;
+    }
+
+    public Athlete(EmailAddress emailAddress, FullName fullName, string password)
+    {
+        EmailAddress = emailAddress;
+        FullName = fullName;
+        Password = password;
+    }
 
     // Promote the Athlete to an Instructor role
     public void PromoteToInstructor()
@@ -55,6 +69,22 @@ public class Athlete(EmailAddress emailAddress, FullName fullName, string passwo
         _subscriptions.Add(subscription);
     }
 
+    public void LoadSubscriptions(IEnumerable<Subscription> subscriptions)
+    {
+        if (null != Subscriptions)
+        {
+            throw new System.Exception("Loading subscriptions is only allowed during athlete creation. Use AddSubscription for adding new subscriptions.");
+        }
+
+        _subscriptions.AddRange(subscriptions);
+    }
+
+    public Subscription? GetActiveSubscription() =>
+        _subscriptions.FirstOrDefault(s => s.GrantsAccessOn(DateOnly.FromDateTime(DateTime.UtcNow)));
+
+    public Subscription? GetLastSubscription() =>
+        _subscriptions.OrderByDescending(s => s.StartDate).FirstOrDefault() ?? null;
+
     public void SetPassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password))
@@ -65,6 +95,32 @@ public class Athlete(EmailAddress emailAddress, FullName fullName, string passwo
 
     public void SetUsername(string username)
     {
+        if (Username == username)
+            throw new ArgumentException("New username must be different from the current one.", nameof(username));
+
         Username = username;
+    }
+
+    public void ChangeEmailAddress(EmailAddress newEmailAddress)
+    {
+        if (EmailAddress == newEmailAddress)
+            throw new ArgumentException("New email address must be different from the current one.", nameof(newEmailAddress));
+
+        EmailAddress = newEmailAddress;
+    }
+
+    public void ChangeFullName(FullName newFullName)
+    {
+        if (FullName == newFullName)
+            throw new ArgumentException("New full name must be different from the current one.", nameof(newFullName));
+
+        FullName = newFullName;
+    }
+
+    public void ChangePhotoPath(PhotoPath? newPhotoPath)
+    {
+        if (PhotoPath == newPhotoPath)
+            throw new ArgumentException("New photo path must be different from the current one.", nameof(newPhotoPath));
+        PhotoPath = newPhotoPath;
     }
 }

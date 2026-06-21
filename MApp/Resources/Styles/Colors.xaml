@@ -1,24 +1,38 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary 
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:styles="clr-namespace:MApp.Resources.Styles">
 
     <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
 
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
+    <!-- Brand palette: single source of truth lives in the Brand project
+         (Brand.Theme.BrandColors), bridged to MAUI Colors via ThemeColors.cs. -->
+    <x:Static x:Key="Primary" Member="styles:ThemeColors.Primary" />
+    <x:Static x:Key="PrimaryDark" Member="styles:ThemeColors.PrimaryLight" />
+    <x:Static x:Key="PrimaryLight" Member="styles:ThemeColors.PrimaryLight" />
+    <x:Static x:Key="OnPrimary" Member="styles:ThemeColors.OnPrimary" />
+    <x:Static x:Key="Secondary" Member="styles:ThemeColors.Secondary" />
+    <x:Static x:Key="Tertiary" Member="styles:ThemeColors.PrimaryDark" />
+
+    <x:Static x:Key="Success" Member="styles:ThemeColors.Success" />
+    <x:Static x:Key="Warning" Member="styles:ThemeColors.Warning" />
+    <x:Static x:Key="Error" Member="styles:ThemeColors.Error" />
+    <x:Static x:Key="Info" Member="styles:ThemeColors.Info" />
+
+    <x:Static x:Key="PrimaryRed" Member="styles:ThemeColors.PrimaryRed" />
+
     <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <Color x:Key="SecondaryDarkText">#EF9A9A</Color>
 
-    <Color x:Key="DarkBackground">#17171a</Color>
-    <Color x:Key="LightOnDarkBackground">#C3C3C3</Color>
-    <Color x:Key="LightBackground">#F2F2F2</Color>
-    <Color x:Key="DarkOnLightBackground">#0D0D0D</Color>
+    <!-- Surfaces: white cards on a light-grey background, matching the Blazor app -->
+    <x:Static x:Key="LightBackground" Member="styles:ThemeColors.Background" />
+    <x:Static x:Key="LightSecondaryBackground" Member="styles:ThemeColors.Surface" />
+    <x:Static x:Key="DarkBackground" Member="styles:ThemeColors.DarkBackground" />
+    <x:Static x:Key="DarkSecondaryBackground" Member="styles:ThemeColors.DarkSurface" />
 
-    <Color x:Key="LightSecondaryBackground">#E0E0E0</Color>
-    <Color x:Key="DarkSecondaryBackground">#222228</Color>
+    <Color x:Key="LightOnDarkBackground">#F5F5F5</Color>
+    <Color x:Key="DarkOnLightBackground">#212121</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>

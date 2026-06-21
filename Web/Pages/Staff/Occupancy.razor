@@ -1,0 +1,77 @@
+@page "/staff/occupancy"
+@layout StaffLayout
+@inject ApiClient Api
+
+<PageTitle>Occupancy — BuildStronger Staff</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Lesson occupancy</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+}
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudSelect T="string" @bind-Value="_filterWorkout" Label="Workout" Variant="Variant.Outlined">
+            <MudSelectItem Value="@("All")">All</MudSelectItem>
+            @foreach (string name in WorkoutNames)
+            {
+                <MudSelectItem Value="@name">@name</MudSelectItem>
+            }
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+<MudTable Items="FilteredLessons" Hover="true" Striped="true" Bordered="true">
+    <HeaderContent>
+        <MudTh>Workout</MudTh>
+        <MudTh>Day</MudTh>
+        <MudTh>Start time</MudTh>
+        <MudTh>Instructor</MudTh>
+        <MudTh>Capacity</MudTh>
+        <MudTh>Registered</MudTh>
+        <MudTh>Occupancy</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Workout.Name</MudTd>
+        <MudTd>@context.Schedule.StartDay</MudTd>
+        <MudTd>@context.Schedule.StartTime.ToString("HH\\:mm")</MudTd>
+        <MudTd>@(context.Instructor?.FullName ?? "Not assigned")</MudTd>
+        <MudTd>@context.MaxCapacity</MudTd>
+        <MudTd>@context.BookedCount</MudTd>
+        <MudTd>
+            <MudProgressLinear Value="@OccupancyPercent(context)"
+                               Color="@(context.BookedCount >= context.MaxCapacity ? Color.Error : Color.Success)"
+                               Rounded="true" Size="Size.Medium" />
+            @context.BookedCount / @context.MaxCapacity
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No lessons found.</MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private List<GetLessonDto> _lessons = [];
+    private bool _loading;
+    private string _filterWorkout = "All";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _lessons = await Api.GetListAsync<GetLessonDto>("api/lesson");
+        _loading = false;
+    }
+
+    private IEnumerable<string> WorkoutNames =>
+        _lessons.Select(l => l.Workout.Name).Distinct().OrderBy(n => n);
+
+    private IEnumerable<GetLessonDto> FilteredLessons =>
+        _lessons.Where(l => _filterWorkout == "All" || l.Workout.Name == _filterWorkout);
+
+    private static double OccupancyPercent(GetLessonDto lesson) =>
+        lesson.MaxCapacity <= 0 ? 0 : Math.Min(100, (double)lesson.BookedCount / lesson.MaxCapacity * 100);
+}

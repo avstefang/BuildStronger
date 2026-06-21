@@ -1,0 +1,159 @@
+@page "/staff/instructors"
+@layout StaffLayout
+@inject ApiClient Api
+@inject ISnackbar Snackbar
+
+<PageTitle>Instructors — BuildStronger Staff</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Instructors</MudText>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenAddDialog" Class="mb-2">Add instructor</MudButton>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+}
+
+<MudGrid>
+    @foreach (var instructor in _instructors)
+    {
+        <MudItem xs="12" sm="6" md="3">
+            <MudCard>
+                <MudCardMedia Image="@GetPhoto(instructor)" Height="180" />
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">@instructor.Firstname @instructor.Lastname</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Primary">@("@" + instructor.Username)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@instructor.Email</MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="() => OpenEditDialog(instructor)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => DeleteInstructor(instructor)" />
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+<MudDialog @bind-Visible="_dialogOpen">
+    <TitleContent>@(_editTarget is null ? "Add instructor" : "Edit instructor")</TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_form.Firstname" Label="First name" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="_form.Lastname" Label="Last name" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="_form.Email" Label="Email" Variant="Variant.Outlined" Class="mb-3" />
+        @if (_editTarget != null)
+        {
+            <MudTextField @bind-Value="_form.Username" Label="Username" Variant="Variant.Outlined" Class="mb-3" />
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveInstructor" Disabled="@_loading">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+    @code {
+    private record InstructorItem(string Id, string Firstname, string Lastname, string Email, string Username, string PhotoFile);
+
+    private List<InstructorItem> _instructors = [];
+
+    // Photos are fetched with the auth token and cached as data URLs, keyed by instructor id.
+    private Dictionary<string, string> _photos = new();
+
+    private bool _loading;
+    private bool _dialogOpen = false;
+    private InstructorItem? _editTarget = null;
+    private InstructorFormModel _form = new();
+
+    protected override async Task OnInitializedAsync() =>
+        await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _instructors = await Api.GetListAsync<InstructorItem>("api/instructor");
+
+        _photos = new();
+        foreach (InstructorItem instructor in _instructors)
+        {
+            if (!string.IsNullOrEmpty(instructor.PhotoFile))
+            {
+                string? src = await Api.GetImageSrcAsync($"api/photo/{instructor.PhotoFile}");
+                if (src is not null)
+                    _photos[instructor.Id] = src;
+            }
+        }
+
+        _loading = false;
+    }
+
+    private string GetPhoto(InstructorItem instructor) =>
+        _photos.TryGetValue(instructor.Id, out string? src) ? src : "https://via.placeholder.com/150";
+
+    private class InstructorFormModel
+    {
+        public string Firstname { get; set; } = string.Empty;
+        public string Lastname { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Username { get; set; }
+    }
+
+    private void OpenAddDialog()
+    {
+        _editTarget = null;
+        _form = new();
+        _dialogOpen = true;
+    }
+
+    private void OpenEditDialog(InstructorItem item)
+    {
+        _editTarget = item;
+        _form = new() { Firstname = item.Firstname, Lastname = item.Lastname, Email = item.Email, Username = item.Username };
+        _dialogOpen = true;
+    }
+
+    private async Task SaveInstructor()
+    {
+        _dialogOpen = false;
+        _loading = true;
+        try
+        {
+            bool ok = _editTarget is null
+                ? await Api.PostAsync("api/instructor", new CreateInstructorDto(_form.Firstname, _form.Lastname, _form.Email))
+                : await Api.PutAsync($"api/instructor/{_editTarget.Id}", new UpdateInstructorDto(_form.Firstname, _form.Lastname, _form.Email, _form.Username ?? string.Empty));
+
+            if (ok)
+            {
+                Snackbar.Add("Instructor saved.", Severity.Success);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.Add("Saving failed.", Severity.Error);
+            }
+        }
+        catch
+        {
+            Snackbar.Add("An error occurred while saving.", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task DeleteInstructor(InstructorItem item)
+    {
+        _loading = true;
+        if (await Api.DeleteAsync($"api/instructor/{item.Id}"))
+        {
+            Snackbar.Add("Instructor removed.", Severity.Success);
+            await LoadAsync();
+        }
+        else
+        {
+            Snackbar.Add("Removing failed.", Severity.Error);
+        }
+
+        _loading = false;
+    }
+}

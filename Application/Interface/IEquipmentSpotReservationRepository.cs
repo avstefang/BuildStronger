@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface IEquipmentSpotReservationRepository : IRepository<EquipmentSpotReservation>
+public interface IEquipmentSpotReservationRepository
 {
-    Task<EquipmentSpotReservation> GetEquipmentSpotReservationAsync(EquipmentSpotReservation entity);
-    Task<IEnumerable<EquipmentSpotReservation>> GetAllEquipmentSpotReservationsAsync();
-    Task AddEquipmentSpotReservationAsync(EquipmentSpotReservation entity);
-    Task UpdateEquipmentSpotReservationAsync(EquipmentSpotReservation entity);
-    Task DeleteEquipmentSpotReservationAsync(EquipmentSpotReservation entity);
+    Task AddEquipmentSpotReservationAsync(EquipmentSpotReservation equipmentSpotReservation);
+    Task<IEnumerable<EquipmentSpotReservation>?> GetByLessonIdAsync(Guid lessonId);
+    Task DeleteByReservationIdAsync(Guid reservationId);
 }

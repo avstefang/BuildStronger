@@ -5,11 +5,12 @@ using Domain.Entity;
 
 namespace Application.Interface;
 
-public interface ISubscriptionPlanRepository : IRepository<SubscriptionPlan>
+public interface ISubscriptionPlanRepository
 {
-    Task<SubscriptionPlan> GetSubscriptionPlanAsync(SubscriptionPlan plan);
-    Task<IEnumerable<SubscriptionPlan>> GetAllSubscriptionPlansAsync();
-    Task AddSubscriptionPlanAsync(SubscriptionPlan plan);
-    Task UpdateSubscriptionPlanAsync(SubscriptionPlan plan);
-    Task DeleteSubscriptionPlanAsync(SubscriptionPlan plan);
+    Task<SubscriptionPlan?> GetSubscriptionPlanByIdAsync(Guid subscriptionPlanId);
+    Task<SubscriptionPlan?> GetSubscriptionPlanByNameAsync(string name);
+    Task<IEnumerable<SubscriptionPlan>?> GetAllSubscriptionPlansAsync();
+    Task AddSubscriptionPlanAsync(SubscriptionPlan subscriptionPlan);
+    Task UpdateSubscriptionPlanAsync(SubscriptionPlan subscriptionPlan);
+    Task DeleteSubscriptionPlanAsync(Guid subscriptionPlanId);
 }

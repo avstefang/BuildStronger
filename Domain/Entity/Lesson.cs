@@ -2,19 +2,39 @@ using System;
 
 namespace Domain.Entity;
 
-public class Lesson(Workout workout, int maxCapacity, Room room, List<Equipment>? equipment, int customDuration = 0)
+public class Lesson
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public Workout Workout { get; private set; } = workout;
-    public int CustomDuration { get; private set; } = customDuration;
-    public int MaxCapacity { get; private set; } = maxCapacity;
-    public Instructor? Instructor { get; private set; }
-    public Room Room { get; set; } = room;
-    public List<Equipment>? Equipment { get; set; } = equipment;
+    public Workout Workout { get; private set; }
+    public Schedule Schedule { get; private set; }
+    // Nullable: the customDuration column is NULL when the lesson uses the workout's own duration.
+    public int? CustomDuration { get; private set; }
+    public int MaxCapacity { get; private set; }
+    // The instructor lives in another aggregate (athlete table); this FK is loaded with the lesson,
+    // while the Instructor navigation is populated separately (see the services).
+    public Guid? InstructorId { get; private set; }
+    public Instructor? Instructor { get; private set; } = null;
+    public Room Room { get; private set; } = null!;
+
+    private Lesson() { }
+
+    public Lesson(Workout workout, Schedule schedule, int maxCapacity, Room room, int customDuration = 0)
+    {
+        Workout = workout;
+        Schedule = schedule;
+        MaxCapacity = maxCapacity;
+        CustomDuration = customDuration;
+
+        if (maxCapacity > room.Capacity)
+            throw new ArgumentException("Max capacity cannot exceed room capacity.");
+
+        Room = room;
+    }
 
     public void AssignInstructor(Instructor instructor)
     {
-        Instructor = instructor ?? throw new ArgumentNullException(nameof(instructor), "Instructor cannot be null.");
+        Instructor = instructor;
+        InstructorId = instructor.Athlete.Id;
     }
 
     public void UpdateCustomDuration(int duration)
@@ -31,5 +51,16 @@ public class Lesson(Workout workout, int maxCapacity, Room room, List<Equipment>
             throw new ArgumentOutOfRangeException(nameof(capacity), "Max capacity cannot be negative.");
 
         MaxCapacity = capacity;
+    }
+
+    public void UpdateSchedule(Schedule schedule)
+    {
+        Schedule = schedule;
+    }
+
+    public TimeOnly GetEndTime()
+    {
+        int totalDuration = CustomDuration is int cd && cd > 0 ? cd : Workout.Duration.Minutes;
+        return Schedule.StartTime.Add(TimeSpan.FromMinutes(totalDuration));
     }
 }

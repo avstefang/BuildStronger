@@ -19,16 +19,19 @@ public sealed record class Address
         ZipCode = zipCode;
     }
 
-    public string Get()
+    public Address(string formatted)
     {
-        StringBuilder address = new StringBuilder();
-        address.Append(Street);
-        address.Append(" ");
-        address.Append(HouseNumber);
-        address.Append(", ");
-        address.Append(City);
-        address.Append(" ");
-        address.Append(ZipCode);
-        return address.ToString();
+        var parts = formatted.Split('|');
+        if (parts.Length != 4)
+            throw new ArgumentException("Invalid address format. Expected format: 'Street|HouseNumber|City|ZipCode'.");
+
+        Street = parts[0];
+        HouseNumber = parts[1];
+        City = parts[2];
+        ZipCode = parts[3];
     }
+
+    public string Get() => $"{Street}|{HouseNumber}|{City}|{ZipCode}";
+
+    public string ToDisplayString() => $"{Street} {HouseNumber}, {ZipCode} {City}";
 }

@@ -1,0 +1,145 @@
+@page "/register"
+@inject ApiClient Api
+@inject NavigationManager NavigationManager
+
+<PageTitle>Register — BuildStronger</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Create your account</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardContent>
+                <MudTextField @bind-Value="_firstName" Label="First name" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_lastName" Label="Last name" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_email" Label="Email" InputType="InputType.Email" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-4" />
+
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Choose a subscription</MudText>
+                <MudRadioGroup T="Guid" @bind-Value="_selectedPlanId" Class="mb-4">
+                    @foreach (GetSubscriptionPlanDto plan in _plans)
+                    {
+                        <MudRadio T="Guid" Value="@plan.Id" onclick="@(() => _selectedPlanId = plan.Id)">@PlanLabel(plan)</MudRadio>
+                    }
+                </MudRadioGroup>
+
+                <MudDatePicker @bind-Date="_startDate" Label="Membership start date" MinDate="DateTime.Today" Variant="Variant.Outlined" Class="mb-4" />
+
+                <MudText Typo="Typo.subtitle1" Class="mb-2">Payment method</MudText>
+                <MudRadioGroup @bind-Value="_paymentMethod" Class="mb-4">
+                    @foreach (string paymentMethod in GetPaymentMethod(_plans.Where(p => p.Id == _selectedPlanId).FirstOrDefault() ?? new GetSubscriptionPlanDto()))
+                    {
+                        <MudRadio Value="@(paymentMethod)">@(paymentMethod)</MudRadio>
+                    }
+                </MudRadioGroup>
+
+                @if (_errorMessage != null)
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-3">@_errorMessage</MudAlert>
+                }
+                @if (_success)
+                {
+                    <MudAlert Severity="Severity.Success" Class="mb-3">Registration successful! Check your email for confirmation.</MudAlert>
+                }
+            </MudCardContent>
+            <MudCardActions Class="px-4 pb-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="Submit" Disabled="_loading">
+                    @if (_loading) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+                    Pay & register
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private const int UnlimitedThreshold = 999;
+
+    private string _firstName = string.Empty;
+    private string _lastName = string.Empty;
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private Guid _selectedPlanId;
+    private string _paymentMethod = "ideal";
+    private DateTime? _startDate = DateTime.Today;
+    private bool _loading = false;
+    private bool _success = false;
+    private string? _errorMessage = null;
+    private bool _redirect = false;
+
+    private List<GetSubscriptionPlanDto> _plans = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _plans = await Api.GetListAsync<GetSubscriptionPlanDto>("api/subscriptionplan/plans");
+        _selectedPlanId = _plans.FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_redirect)
+        {
+            _redirect = false;
+            await Task.Delay(4000);
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private string[] GetPaymentMethod(GetSubscriptionPlanDto dto)
+    {
+        return dto.PaymentMethod.Split(',');
+    }
+
+    private static string PlanLabel(GetSubscriptionPlanDto plan)
+    {
+        string period = plan.DurationInMonths == 12 ? "year" : plan.DurationInMonths == 1 ? "month" : $"{plan.DurationInMonths} months";
+        string credits = plan.WeeklyCreditAmount >= UnlimitedThreshold ? "Unlimited" : $"{plan.WeeklyCreditAmount}x per week";
+        return $"{plan.Name} — €{plan.Price:0.##}/{period} ({credits})";
+    }
+
+    private async Task Submit()
+    {
+        _loading = true;
+        _errorMessage = null;
+        _success = false;
+
+        if (string.IsNullOrWhiteSpace(_firstName) || string.IsNullOrWhiteSpace(_lastName)
+            || string.IsNullOrWhiteSpace(_email) || string.IsNullOrWhiteSpace(_password))
+        {
+            _errorMessage = "Please fill in your first name, last name, email and password.";
+            _loading = false;
+            return;
+        }
+
+        try
+        {
+            // The register endpoint creates the account only; choosing/paying a subscription is a
+            // separate step (handled in the member app), so the plan/payment fields aren't sent here.
+            RegisterAthleteDto dto = new()
+            {
+                FirstName = _firstName,
+                LastName = _lastName,
+                Email = _email,
+                Password = _password
+            };
+
+            GetAthleteDto? created = await Api.PostAsync<GetAthleteDto>("api/auth/register", dto);
+            if (created is null)
+            {
+                _errorMessage = "Registration failed. An account with this email may already exist.";
+                return;
+            }
+
+            _success = true;
+            _redirect = true;
+        }
+        catch
+        {
+            _errorMessage = "Something went wrong during registration. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

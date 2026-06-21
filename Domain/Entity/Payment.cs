@@ -1,18 +1,37 @@
 using Domain.Enum;
 using Domain.Exception;
+using Domain.Value_object;
 
 namespace Domain.Entity;
 
-public class Payment(decimal amount, Subscription subscription, Guid stripeId)
+public class Payment
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public decimal Amount { get; private set; } = amount;
+    public decimal Amount { get; private set; }
     public PaymentStatus Status { get; private set; } = PaymentStatus.Pending;
     public DateTime PayedAt { get; private set; } = DateTime.UtcNow;
-    public PaymentMethod Method { get; private set; } = PaymentMethod.IDEAL;
-    public Subscription Subscription { get; private set; } = subscription;
-    public Guid StripeId { get; private set; } = stripeId;
+    public PaymentMethod Method { get; private set; } = PaymentMethod.Wero;
+    public Subscription Subscription { get; private set; }
+    public ProcessorId ProcessorId { get; private set; }
     public Currency Currency { get; private set; } = Currency.EUR;
+
+    private Payment() { }
+
+    public Payment(ProcessorId processorId, Subscription subscription, PaymentMethod method)
+    {
+        ProcessorId = processorId;
+        Subscription = subscription;
+        Amount = Subscription.SubscriptionPlan.Price;
+        Currency = Subscription.SubscriptionPlan.Currency;
+
+        // A plan now offers several methods; the payment records the one the member picked.
+        if (!subscription.SubscriptionPlan.PaymentMethods.Contains(method))
+            throw new ArgumentException(
+                $"Payment method '{method}' is not offered by plan '{subscription.SubscriptionPlan.Name}'.",
+                nameof(method));
+
+        Method = method;
+    }
 
     public void IsSuccessful()
     {
@@ -36,33 +55,5 @@ public class Payment(decimal amount, Subscription subscription, Guid stripeId)
     public void IsPending()
     {
         Status = PaymentStatus.Pending;
-    }
-
-    public void SetAmount(decimal amount)
-    {
-        if (amount <= 0)
-            throw new ArgumentException("Amount must be greater than zero.", nameof(amount));
-
-        Amount = amount;
-    }
-
-    public void SetStatus(PaymentStatus status)
-    {
-        Status = status;
-    }
-
-    public void SetStripeId(Guid stripeId)
-    {
-        StripeId = stripeId;
-    }
-
-    public void SetCurrency(Currency currency)
-    {
-        Currency = currency;
-    }
-
-    public void SetPaymentMethod(PaymentMethod method)
-    {
-        Method = method;
     }
 }

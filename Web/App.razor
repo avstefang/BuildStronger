@@ -1,6 +1,66 @@
-﻿<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code {
+    private MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = BrandColors.PrimaryRed,
+            PrimaryDarken = BrandColors.PrimaryDark,
+            PrimaryLighten = BrandColors.PrimaryLight,
+            PrimaryContrastText = BrandColors.OnPrimary,
+
+            Secondary = BrandColors.Secondary,
+            SecondaryContrastText = BrandColors.OnSecondary,
+
+            AppbarBackground = BrandColors.PrimaryRed,
+            AppbarText = BrandColors.OnPrimary,
+
+            DrawerBackground = "#1A1A1A",
+            DrawerText = "#F5F5F5",
+            DrawerIcon = "#EF9A9A",
+
+            Background = BrandColors.Background,
+            Surface = BrandColors.Surface,
+
+            TextPrimary = BrandColors.TextPrimary,
+            TextSecondary = BrandColors.TextSecondary,
+
+            ActionDefault = BrandColors.PrimaryRed,
+
+            Success = BrandColors.Success,
+            Warning = BrandColors.Warning,
+            Error = BrandColors.Error,
+            Info = BrandColors.Info,
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = ["Roboto", "sans-serif"],
+            },
+            H3 = new H3Typography
+            {
+                FontWeight = "700",
+            },
+            H4 = new H4Typography
+            {
+                FontWeight = "700",
+            },
+            H5 = new H5Typography
+            {
+                FontWeight = "600",
+            },
+        },
+    };
+}

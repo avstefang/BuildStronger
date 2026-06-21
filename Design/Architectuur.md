@@ -284,6 +284,65 @@ Ontwikkelaar, Klant, Eigenaar, Medewerker
 ### Build in
 - InvalidCredentialException: user logged in with invalid credentials
 
+## Entities
+- Athlete contains
+  - Subscription
+- Equipment contains
+  - EquipmentRoom
+- EquipmentRoom contains
+  - Room
+- EquipmentSpot contains
+  - Lesson
+  - EquipmentRoom
+  - Reservation
+- Instructor
+- Lesson
+  - Workout
+  - Schedule
+  - Instructor
+  - Equipment
+- Location
+- Payment
+  - Subscription
+- Reservation
+  - Athlete
+  - Lesson
+- Room
+- Schedule
+- Subscription contains
+  - SubscriptionPlan
+- SubscriptionPlan
+- Workout
+  - Room
+  - Equipment
+
+## DbContext
+- Athlete contains: GET, UPDATE, DELETE, ADD
+  - Subscription: GET
+- Equipment: GET
+- EquipmentRoom contains
+  - Room
+- EquipmentSpot: GET
+  - Lesson
+  - EquipmentRoom
+- Instructor: GET, [role instructor] SET
+- Lesson: GET, SET [role instructor], UPDATE [role instructor], DELETE [role instructor]
+  - Workout
+  - Schedule
+  - Instructor
+  - Equipment
+  - Room
+- Location: GET
+- Payment: SET
+  - Subscription
+- Reservation: GET [AuthorizationDecision true], SET [AuthorizationDecision true], UPDATE [AuthorizationDecision true], DELETE [AuthorizationDecision true]
+  - Athlete
+  - Lesson
+  - EquipmentSpot?
+- Room: GET
+- Workout: GET, SET [role instructor], UPDATE [role instructor], DELETE [role instructor]
+  - Equipment
+
 ## Links
 - Value objects: https://marcoatschaefer.medium.com/onion-architecture-explained-building-maintainable-software-54996ff8e464#2def, https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/implement-value-objects
 - Exceptions: https://learn.microsoft.com/en-us/dotnet/standard/exceptions/how-to-create-localized-exception-messages
@@ -293,3 +352,5 @@ Ontwikkelaar, Klant, Eigenaar, Medewerker
 - General repositories: https://www.ben-morris.com/why-the-generic-repository-is-just-a-lazy-anti-pattern/
 - View: https://marcoatschaefer.medium.com/onion-architecture-explained-building-maintainable-software-54996ff8e464#0b6e
 - Use case: https://www.figma.com/nl-nl/resource-library/wat-is-een-use-case/
+- Database: https://medium.com/@mcansener/seamless-database-integration-with-c-a-practical-guide-80ec8321f6f2
+- JWT: https://medium.com/@sajadshafi/jwt-authentication-in-c-net-core-7-web-api-b825b3aee11d

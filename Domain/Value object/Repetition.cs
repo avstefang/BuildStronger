@@ -16,13 +16,16 @@ public sealed class Repetition
             throw new DomainException("Repetition count and end date cannot be set simultaneously.");
         }
 
-        if (repetitionCount.HasValue && repetitionCount <= 0)
-        {
-            throw new DomainException("Repetition count must be greater than zero.");
-        }
         if (repetitionEndDate.HasValue && repetitionEndDate <= DateTime.Now)
         {
             throw new DomainException("Repetition end date must be in the future.");
+        }
+
+        if (!repetitionCount.HasValue && !repetitionEndDate.HasValue)
+        {
+            RepetitionCount = 1;
+            RepetitionEndDate = null;
+            return;
         }
 
         RepetitionCount = repetitionCount;

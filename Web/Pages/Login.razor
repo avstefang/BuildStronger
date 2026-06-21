@@ -1,0 +1,73 @@
+@page "/login"
+@inject ApiClient Api
+@inject TokenStore TokenStore
+@inject NavigationManager Nav
+
+<PageTitle>Staff login — BuildStronger</PageTitle>
+
+<MudGrid Justify="Justify.Center">
+    <MudItem xs="12" sm="8" md="4">
+        <MudText Typo="Typo.h4" GutterBottom="true" Align="Align.Center">Staff login</MudText>
+        <MudCard>
+            <MudCardContent>
+                <MudTextField @bind-Value="_email" Label="Email or username" InputType="InputType.Email" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="_password" Label="Password" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-3" />
+
+                @if (_errorMessage != null)
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-2">@_errorMessage</MudAlert>
+                }
+            </MudCardContent>
+            <MudCardActions Class="px-4 pb-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" OnClick="Submit" Disabled="_loading">
+                    @if (_loading) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+                    Sign in
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private bool _loading = false;
+    private string? _errorMessage = null;
+
+    private async Task Submit()
+    {
+        _loading = true;
+        _errorMessage = null;
+
+        try
+        {
+            LoginResponseDto? response = await Api.PostAsync<LoginResponseDto>(
+                "api/auth/login", new LoginAthleteDto(_email, _password));
+
+            if (response is null)
+            {
+                _errorMessage = "Login failed. Check your email and password.";
+                return;
+            }
+
+            // Only staff may use this portal; the staff endpoints require these roles anyway.
+            string role = response.Athlete.Role;
+            if (role != "Instructor" && role != "Administrator")
+            {
+                _errorMessage = "This account does not have staff access.";
+                return;
+            }
+
+            await TokenStore.SetAsync(response.Token);
+            Nav.NavigateTo("/staff/workouts");
+        }
+        catch
+        {
+            _errorMessage = "Something went wrong while signing in. Please try again.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

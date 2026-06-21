@@ -1,12 +1,12 @@
 # SQL database
 * athlete
     - id: GUID, NOT NULL, PK
-    - emailAddress: NOT NULL, PK
+    - emailAddress: NOT NULL, Unique
     - firstName: NOT NULL
     - lastName: NOT NULL
     - password: NOT NULL
     - role: ENUM[(default)User, Administrator, Employee, Instructor, NNB_Instructor], DEFAULT FALSE
-    - username: empty
+    - username: empty, Unique
     - photoPath: empty
 * lesson
     - id: GUID, NOT NULL, Increment, Unique, PK
@@ -15,10 +15,6 @@
     - maxCapacity: NOT NULL, INT,
     - instructorId: (create unknown instructor with id 1 later on), FK, INT
     - roomId: NOT NULL, FK, INT
-* lesson_equipment
-    - lessonId: GUID, NOT NULL, FK
-    - equipmentId: GUID, NOT NULL, FK
-    - Unique(lessonId, equipmentId)
 * schedule
     - id: GUID, NOT NULL, Increment
     - startTime: NOT NULL, TIME
@@ -29,9 +25,13 @@
     - registeredAt: NOT NULL, DATE
 * workout
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
     - description: NOT NULL, STRING
     - duration: NOT NULL
+* workout_equipment
+    - workoutId: GUID, NOT NULL, FK
+    - equipmentId: GUID, NOT NULL, FK
+    - Unique(workoutId, equipmentId)
 * reservation
     - lessonId: FK, NOT NULL
     - athleteId: GUID, FK, NOT NULL
@@ -48,22 +48,24 @@
     - status: DEFAULT FALSE, ENUM[Active, Cancelled, Expired]
 * subscriptionPlan
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
     - price: NOT NULL, DECIMAL
     - durationInMonths: INT, NOT NULL
-    - monthlyCreditAmount: NOT NULL, INT
+    - weeklyCreditAmount: NOT NULL, INT
+    - paymentMethod: NOT NULL, ENUM, Default Wero (others to come later)
+    - paymentCurrency: NOT NULL, ENUM default eur
 * payment
     - id: GUID, NOT NULL, Increment, Unique, PK
     - subscriptionId: GUID, NOT NULL, FK
     - amount: DECIMAL, NOT NULL
     - status: NOT NULL, ENUM[Pending, Succeeded, Failed, Refunded, Cancelled]
     - payedAt: DATETIME2, NOT NULL
-    - method: NOT NULL, ENUM, Default IDEAL/Wero (others to come later)
-    - stripeId: string, NOT NULL
+    - method: NOT NULL, ENUM, Default Wero (others to come later)
+    - processorId: string, NOT NULL
     - currency: NOT NULL, ENUM default eur
 * equipment
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
 * equipmentRoom
     - id: GUID, NOT NULL, Increment, Unique, PK
     - roomId: GUID, NOT NULL, FK
@@ -86,11 +88,11 @@
     - Unique(lessonId, reservationId)
 * location
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
     - address: NOT NULL
 * room
     - id: GUID, NOT NULL, Increment, Unique, PK
-    - name: NOT NULL
+    - name: NOT NULL, Unique
     - capacity: INT, NOT NULL
     - locationId: GUID, NOT NULL, FK
 
