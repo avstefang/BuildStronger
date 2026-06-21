@@ -1,162 +1,291 @@
 @page "/staff/schedule"
 @layout StaffLayout
+@inject ApiClient Api
+@inject ISnackbar Snackbar
 
-<PageTitle>Rooster — BuildStronger Medewerkers</PageTitle>
+<PageTitle>Schedule — BuildStronger Staff</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Lesrooster</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Lesson schedule</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog" Class="mb-4">
-    Les toevoegen
+    Add lesson
 </MudButton>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+}
 
 <MudTable Items="_lessons" Hover="true" Striped="true" Bordered="true">
     <HeaderContent>
         <MudTh>Workout</MudTh>
-        <MudTh>Dag</MudTh>
-        <MudTh>Starttijd</MudTh>
-        <MudTh>Duur (min)</MudTh>
-        <MudTh>Instructeur</MudTh>
-        <MudTh>Herhaling</MudTh>
-        <MudTh>Acties</MudTh>
+        <MudTh>Day</MudTh>
+        <MudTh>Start time</MudTh>
+        <MudTh>Duration (min)</MudTh>
+        <MudTh>Instructor</MudTh>
+        <MudTh>Room</MudTh>
+        <MudTh>Recurrence</MudTh>
+        <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.Workout</MudTd>
-        <MudTd>@context.Day</MudTd>
-        <MudTd>@context.StartTime</MudTd>
-        <MudTd>@context.DurationMinutes</MudTd>
-        <MudTd>@context.Instructor</MudTd>
-        <MudTd>@context.Recurrence</MudTd>
+        <MudTd>@context.Workout.Name</MudTd>
+        <MudTd>@DayLabel(context.Schedule.StartDay)</MudTd>
+        <MudTd>@TimeLabel(context.Schedule.StartTime)</MudTd>
+        <MudTd>@(context.CustomDuration > 0 ? context.CustomDuration : context.Workout.DurationInMinutes)</MudTd>
+        <MudTd>@(context.Instructor?.FullName ?? "Not assigned")</MudTd>
+        <MudTd>@context.Room.Name</MudTd>
+        <MudTd>@RecurrenceLabel(context.Schedule)</MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteLesson(context)" />
         </MudTd>
     </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No lessons scheduled yet.</MudText>
+    </NoRecordsContent>
 </MudTable>
 
 <MudDialog @bind-Visible="_dialogOpen" Options="@(new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true })">
-    <TitleContent>@(_editTarget == null ? "Les toevoegen" : "Les bewerken")</TitleContent>
+    <TitleContent>@(_editTarget == null ? "Add lesson" : "Edit lesson")</TitleContent>
     <DialogContent>
         <MudGrid>
             <MudItem xs="12" sm="6">
-                <MudSelect @bind-Value="_form.Workout" Label="Workout" Variant="Variant.Outlined">
-                    <MudSelectItem Value="@("Spinning")">Spinning</MudSelectItem>
-                    <MudSelectItem Value="@("Yoga")">Yoga</MudSelectItem>
-                    <MudSelectItem Value="@("Bootcamp")">Bootcamp</MudSelectItem>
-                    <MudSelectItem Value="@("Boxing")">Boxing</MudSelectItem>
-                    <MudSelectItem Value="@("Bodyshape")">Bodyshape</MudSelectItem>
-                    <MudSelectItem Value="@("Club Power")">Club Power</MudSelectItem>
-                    <MudSelectItem Value="@("XCO")">XCO</MudSelectItem>
-                    <MudSelectItem Value="@("Total Body Workout")">Total Body Workout</MudSelectItem>
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudSelect @bind-Value="_form.Instructor" Label="Instructeur" Variant="Variant.Outlined">
-                    <MudSelectItem Value="@("Nog onbekend")">Nog onbekend</MudSelectItem>
-                    <MudSelectItem Value="@("Lisa van der Berg")">Lisa van der Berg</MudSelectItem>
-                    <MudSelectItem Value="@("Mark Jansen")">Mark Jansen</MudSelectItem>
-                </MudSelect>
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <MudSelect @bind-Value="_form.Day" Label="Dag" Variant="Variant.Outlined">
-                    @foreach (var day in new[] { "Maandag","Dinsdag","Woensdag","Donderdag","Vrijdag","Zaterdag","Zondag" })
+                <MudSelect T="Guid" @bind-Value="_form.WorkoutId" Label="Workout" Variant="Variant.Outlined" Disabled="@(_editTarget != null)">
+                    @foreach (GetWorkoutDto w in _workouts)
                     {
-                        <MudSelectItem Value="@day">@day</MudSelectItem>
+                        <MudSelectItem Value="@w.Id">@w.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="Guid" @bind-Value="_form.RoomId" Label="Room" Variant="Variant.Outlined" Disabled="@(_editTarget != null)">
+                    @foreach (GetRoomDto r in _rooms)
+                    {
+                        <MudSelectItem Value="@r.Id">@($"{r.Name} (cap. {r.Capacity})")</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="Guid" @bind-Value="_form.InstructorId" Label="Instructor" Variant="Variant.Outlined">
+                    <MudSelectItem T="Guid" Value="@Guid.Empty">Not assigned</MudSelectItem>
+                    @foreach (GetInstructorDto i in _instructors)
+                    {
+                        <MudSelectItem T="Guid" Value="@i.Id">@($"{i.Firstname} {i.Lastname}")</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="DayOfWeek" @bind-Value="_form.Day" Label="Day" Variant="Variant.Outlined">
+                    @foreach (DayOption d in _days)
+                    {
+                        <MudSelectItem Value="@d.Value">@d.Label</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudTimePicker @bind-Time="_form.StartTime" Label="Starttijd" Variant="Variant.Outlined" />
+                <MudTimePicker @bind-Time="_form.StartTime" Label="Start time" Variant="Variant.Outlined" />
             </MudItem>
             <MudItem xs="12" sm="3">
-                <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duur (min)" Variant="Variant.Outlined" Min="1" />
+                <MudNumericField @bind-Value="_form.Duration" Label="Duration (min)" Variant="Variant.Outlined" Min="0" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudNumericField @bind-Value="_form.Capacity" Label="Max. capacity" Variant="Variant.Outlined" Min="1" />
             </MudItem>
             <MudItem xs="12">
-                <MudSelect @bind-Value="_form.RecurrenceType" Label="Herhaling" Variant="Variant.Outlined">
-                    <MudSelectItem Value="@("Eenmalig")">Eenmalig</MudSelectItem>
-                    <MudSelectItem Value="@("Dagelijks")">Dagelijks</MudSelectItem>
-                    <MudSelectItem Value="@("Wekelijks")">Wekelijks</MudSelectItem>
-                    <MudSelectItem Value="@("Maandelijks")">Maandelijks</MudSelectItem>
-                </MudSelect>
+                <MudRadioGroup @bind-Value="_form.RecurrenceMode">
+                    <MudRadio Value="@("count")">Repeat a number of times</MudRadio>
+                    <MudRadio Value="@("enddate")">Repeat until date</MudRadio>
+                </MudRadioGroup>
             </MudItem>
-            @if (_form.RecurrenceType != "Eenmalig")
+            @if (_form.RecurrenceMode == "count")
             {
                 <MudItem xs="12" sm="6">
-                    <MudSelect @bind-Value="_form.RecurrenceEnd" Label="Einde" Variant="Variant.Outlined">
-                        <MudSelectItem Value="@("EndDate")">Einddatum</MudSelectItem>
-                        <MudSelectItem Value="@("Count")">Aantal herhalingen</MudSelectItem>
-                    </MudSelect>
+                    <MudNumericField @bind-Value="_form.RepetitionCount" Label="Number of repetitions (1 = once)" Variant="Variant.Outlined" Min="1" />
                 </MudItem>
-                @if (_form.RecurrenceEnd == "EndDate")
-                {
-                    <MudItem xs="12" sm="6">
-                        <MudDatePicker @bind-Date="_form.EndDate" Label="Einddatum" Variant="Variant.Outlined" MinDate="DateTime.Today" />
-                    </MudItem>
-                }
-                else
-                {
-                    <MudItem xs="12" sm="6">
-                        <MudNumericField @bind-Value="_form.RepetitionCount" Label="Aantal herhalingen" Variant="Variant.Outlined" Min="1" />
-                    </MudItem>
-                }
+            }
+            else
+            {
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker @bind-Date="_form.EndDate" Label="End date" Variant="Variant.Outlined" MinDate="DateTime.Today.AddDays(1)" />
+                </MudItem>
             }
         </MudGrid>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => _dialogOpen = false">Annuleren</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLesson">Opslaan</MudButton>
+        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveLesson" Disabled="_saving">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
-    private record LessonItem(string Id, string Workout, string Day, string StartTime, int DurationMinutes, string Instructor, string Recurrence);
+    private List<GetLessonDto> _lessons = [];
+    private List<GetWorkoutDto> _workouts = [];
+    private List<GetRoomDto> _rooms = [];
+    private List<GetInstructorDto> _instructors = [];
 
-    private List<LessonItem> _lessons =
-    [
-        new("1", "Spinning", "Maandag", "07:00", 45, "Lisa van der Berg", "Wekelijks"),
-        new("2", "Yoga", "Woensdag", "09:00", 60, "Mark Jansen", "Wekelijks"),
-        new("3", "Bootcamp", "Zaterdag", "10:00", 50, "Nog onbekend", "Eenmalig"),
-    ];
-
-    private bool _dialogOpen = false;
-    private LessonItem? _editTarget = null;
+    private bool _loading;
+    private bool _saving;
+    private bool _dialogOpen;
+    private GetLessonDto? _editTarget;
     private LessonFormModel _form = new();
+
+    private record DayOption(DayOfWeek Value, string Label);
+    private readonly DayOption[] _days =
+    [
+        new(DayOfWeek.Monday, "Monday"),
+        new(DayOfWeek.Tuesday, "Tuesday"),
+        new(DayOfWeek.Wednesday, "Wednesday"),
+        new(DayOfWeek.Thursday, "Thursday"),
+        new(DayOfWeek.Friday, "Friday"),
+        new(DayOfWeek.Saturday, "Saturday"),
+        new(DayOfWeek.Sunday, "Sunday"),
+    ];
 
     private class LessonFormModel
     {
-        public string Workout { get; set; } = "Spinning";
-        public string Instructor { get; set; } = "Nog onbekend";
-        public string Day { get; set; } = "Maandag";
+        public Guid WorkoutId { get; set; }
+        public Guid RoomId { get; set; }
+        // Guid.Empty means "Not assigned" (no instructor yet); converted to null when sent.
+        public Guid InstructorId { get; set; }
+        public DayOfWeek Day { get; set; } = DayOfWeek.Monday;
         public TimeSpan? StartTime { get; set; } = new TimeSpan(9, 0, 0);
-        public int DurationMinutes { get; set; } = 45;
-        public string RecurrenceType { get; set; } = "Eenmalig";
-        public string RecurrenceEnd { get; set; } = "EndDate";
-        public DateTime? EndDate { get; set; }
+        public int Duration { get; set; }
+        public int Capacity { get; set; } = 1;
+        public string RecurrenceMode { get; set; } = "count";
         public int RepetitionCount { get; set; } = 1;
+        public DateTime? EndDate { get; set; }
     }
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _workouts = await Api.GetListAsync<GetWorkoutDto>("api/workout");
+        _rooms = await Api.GetListAsync<GetRoomDto>("api/room");
+        _instructors = await Api.GetListAsync<GetInstructorDto>("api/instructor");
+        _lessons = await Api.GetListAsync<GetLessonDto>("api/lesson");
+        _loading = false;
+    }
+
+    private string DayLabel(string startDay) =>
+        Enum.TryParse(startDay, out DayOfWeek d) ? _days.First(x => x.Value == d).Label : startDay;
+
+    private static string TimeLabel(TimeOnly time) => time.ToString("HH:mm");
+
+    private static string RecurrenceLabel(GetScheduleDto s) =>
+        s.RepetitionEndDate.HasValue ? $"until {s.RepetitionEndDate.Value:dd-MM-yyyy}"
+        : s.RepetitionCount.HasValue ? $"{s.RepetitionCount}x"
+        : "—";
 
     private void OpenAddDialog()
     {
         _editTarget = null;
-        _form = new();
+        GetWorkoutDto? firstWorkout = _workouts.FirstOrDefault();
+        GetRoomDto? firstRoom = _rooms.FirstOrDefault();
+        _form = new()
+        {
+            WorkoutId = firstWorkout?.Id ?? Guid.Empty,
+            RoomId = firstRoom?.Id ?? Guid.Empty,
+            Duration = firstWorkout?.DurationInMinutes ?? 45,
+            Capacity = firstRoom?.Capacity ?? 1
+        };
         _dialogOpen = true;
     }
 
-    private void OpenEditDialog(LessonItem item)
+    private void OpenEditDialog(GetLessonDto lesson)
     {
-        _editTarget = item;
-        _form = new() { Workout = item.Workout, Day = item.Day, Instructor = item.Instructor, DurationMinutes = item.DurationMinutes };
+        _editTarget = lesson;
+        _form = new()
+        {
+            WorkoutId = lesson.Workout.Id,
+            RoomId = lesson.Room.Id,
+            InstructorId = lesson.Instructor?.Id ?? Guid.Empty,
+            Day = Enum.TryParse(lesson.Schedule.StartDay, out DayOfWeek d) ? d : DayOfWeek.Monday,
+            StartTime = lesson.Schedule.StartTime.ToTimeSpan(),
+            Duration = lesson.CustomDuration > 0 ? lesson.CustomDuration : lesson.Workout.DurationInMinutes,
+            Capacity = lesson.MaxCapacity,
+            RecurrenceMode = lesson.Schedule.RepetitionEndDate.HasValue ? "enddate" : "count",
+            RepetitionCount = lesson.Schedule.RepetitionCount ?? 1,
+            EndDate = lesson.Schedule.RepetitionEndDate
+        };
         _dialogOpen = true;
     }
 
-    private void SaveLesson()
+    private async Task SaveLesson()
     {
-        // TODO: call API to add or update lesson with recurrence settings
-        _dialogOpen = false;
+        _saving = true;
+        try
+        {
+            int? count = _form.RecurrenceMode == "count" ? _form.RepetitionCount : null;
+            DateTime? endDate = _form.RecurrenceMode == "enddate" ? _form.EndDate : null;
+            TimeOnly startTime = TimeOnly.FromTimeSpan(_form.StartTime ?? TimeSpan.Zero);
+            Guid? instructorId = _form.InstructorId == Guid.Empty ? null : _form.InstructorId;
+
+            string? error;
+            if (_editTarget is null)
+            {
+                CreateLessonDto dto = new()
+                {
+                    WorkoutId = _form.WorkoutId,
+                    RoomId = _form.RoomId,
+                    InstructorId = instructorId,
+                    MaxCapacity = _form.Capacity,
+                    CustomDuration = _form.Duration,
+                    StartTime = startTime,
+                    StartDay = _form.Day,
+                    RepetitionCount = count,
+                    RepetitionEndDate = endDate
+                };
+                error = await Api.PostReturningErrorAsync("api/lesson", dto);
+            }
+            else
+            {
+                UpdateLessonDto dto = new()
+                {
+                    Id = _editTarget.Id,
+                    InstructorId = instructorId,
+                    MaxCapacity = _form.Capacity,
+                    CustomDuration = _form.Duration,
+                    StartTime = startTime,
+                    StartDay = _form.Day,
+                    RepetitionCount = count,
+                    RepetitionEndDate = endDate
+                };
+                error = await Api.PutReturningErrorAsync("api/lesson", dto);
+            }
+
+            if (error is null)
+            {
+                _dialogOpen = false;
+                Snackbar.Add("Lesson saved.", Severity.Success);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.Add($"Saving failed: {error}", Severity.Error);
+            }
+        }
+        catch
+        {
+            Snackbar.Add("An error occurred while saving.", Severity.Error);
+        }
+        finally
+        {
+            _saving = false;
+        }
     }
 
-    private void DeleteLesson(LessonItem item)
+    private async Task DeleteLesson(GetLessonDto lesson)
     {
-        // TODO: call API to delete lesson
-        _lessons.Remove(item);
+        if (await Api.DeleteAsync($"api/lesson/{lesson.Id}"))
+        {
+            Snackbar.Add("Lesson removed.", Severity.Success);
+            await LoadAsync();
+        }
+        else
+        {
+            Snackbar.Add("Removing failed.", Severity.Error);
+        }
     }
 }

@@ -5,15 +5,23 @@ namespace Application.Mapping;
 
 public static class AthleteMapping
 {
-    public static GetAthleteDto ToDto(this Athlete athlete) => new()
+    public static GetAthleteDto ToDto(this Athlete athlete)
     {
-        Id = athlete.Id,
-        Email = athlete.EmailAddress.Address,
-        FirstName = athlete.FullName.FirstName,
-        LastName = athlete.FullName.LastName,
-        Username = athlete.Username,
-        Role = athlete.Role.ToString()
-    };
+        // The current membership: the active (or cancelled-but-still-valid) subscription, else the most
+        // recent one. Null when the athlete never subscribed, or when subscriptions weren't loaded.
+        Subscription? subscription = athlete.GetActiveSubscription() ?? athlete.GetLastSubscription();
+
+        return new()
+        {
+            Id = athlete.Id,
+            Email = athlete.EmailAddress.Address,
+            FirstName = athlete.FullName.FirstName,
+            LastName = athlete.FullName.LastName,
+            Username = athlete.Username,
+            Role = athlete.Role.ToString(),
+            Subscription = subscription?.ToDto()
+        };
+    }
 
     public static GetAthleteSummaryDto ToSummaryDto(this Athlete athlete) => new()
     {

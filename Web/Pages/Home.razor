@@ -1,53 +1,61 @@
 @page "/"
+@inject ApiClient Api
 
-<PageTitle>BuildStronger — Jouw sportschool</PageTitle>
+<PageTitle>Build Stronger — Your gym</PageTitle>
 
 <MudPaper Elevation="0" Style="background: linear-gradient(135deg, #C62828 0%, #8E0000 100%); border-radius: 16px; padding: 64px 48px; margin-bottom: 48px;">
-    <MudText Typo="Typo.h2" Style="color: white; font-weight: 800;">Word sterker.</MudText>
+    <MudText Typo="Typo.h2" Style="color: white; font-weight: 800;">Get stronger.</MudText>
     <MudText Typo="Typo.h5" Style="color: rgba(255,255,255,0.85); margin-top: 8px; margin-bottom: 32px;">
-        Groepslessen, spinning, bootcamp en meer. Jouw sportschool, jouw tempo.
+        Group classes, spinning, bootcamp and more. Your gym, your pace.
     </MudText>
     <MudButton Href="/register" Variant="Variant.Filled" Size="Size.Large"
                Style="background: white; color: #C62828; font-weight: 700; border-radius: 8px;">
-        Word lid
+        Become a member
     </MudButton>
 </MudPaper>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Onze lessen</MudText>
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-4" />
+}
+
+<MudText Typo="Typo.h5" GutterBottom="true">Our classes</MudText>
 <MudGrid Class="mb-10">
-    @foreach (var lesson in _lessons)
+    @foreach (GetWorkoutDto workout in _workouts)
     {
         <MudItem xs="12" sm="6" md="3">
             <MudCard Elevation="2" Style="height: 100%;">
                 <MudCardContent>
-                    <MudText Typo="Typo.h6">@lesson.Name</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Primary" Style="font-weight: 600;">@lesson.Location</MudText>
-                    <MudText Typo="Typo.body2" Class="mt-1">@lesson.Description</MudText>
+                    <MudText Typo="Typo.h6">@workout.Name</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Primary" Style="font-weight: 600;">@workout.DurationInMinutes min</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">@workout.Description</MudText>
                 </MudCardContent>
             </MudCard>
         </MudItem>
     }
 </MudGrid>
 
-<MudText Typo="Typo.h5" GutterBottom="true">Abonnementen</MudText>
+<MudText Typo="Typo.h5" GutterBottom="true">Subscriptions</MudText>
 <MudGrid>
-    @foreach (var plan in _plans)
+    @foreach (GetSubscriptionPlanDto plan in _plans)
     {
         <MudItem xs="12" sm="6" md="3">
-            <MudCard Outlined="@(!plan.Featured)" Elevation="@(plan.Featured ? 4 : 1)" Style="@(plan.Featured ? "border: 2px solid #C62828; height: 100%;" : "height: 100%;")">
+            <MudCard Outlined="@(!IsFeatured(plan))"
+                     Elevation="@(IsFeatured(plan) ? 4 : 1)"
+                     Style="@(IsFeatured(plan) ? "border: 2px solid #C62828; height: 100%;" : "height: 100%;")">
                 <MudCardContent>
-                    @if (plan.Featured)
+                    @if (IsFeatured(plan))
                     {
-                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mb-2">Meest gekozen</MudChip>
+                        <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mb-2">Most popular</MudChip>
                     }
                     <MudText Typo="Typo.h6">@plan.Name</MudText>
-                    <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 800;">€@plan.Price</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">@plan.Description</MudText>
+                    <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-weight: 800;">€@plan.Price.ToString("0.##")</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@PlanCaption(plan)</MudText>
                 </MudCardContent>
                 <MudCardActions>
-                    <MudButton Href="/register" Variant="@(plan.Featured ? Variant.Filled : Variant.Outlined)"
+                    <MudButton Href="/register" Variant="@(IsFeatured(plan) ? Variant.Filled : Variant.Outlined)"
                                Color="Color.Primary" FullWidth="true">
-                        Aanmelden
+                        Sign up
                     </MudButton>
                 </MudCardActions>
             </MudCard>
@@ -56,26 +64,39 @@
 </MudGrid>
 
 @code {
-    private record LessonInfo(string Name, string Location, string Description);
-    private record PlanInfo(string Name, string Price, string Description, bool Featured = false);
+    // Plans at or above this weekly credit allowance are shown as "unlimited".
+    private const int UnlimitedThreshold = 999;
 
-    private List<LessonInfo> _lessons =
-    [
-        new("Spinning", "Spinningzaal", "4 rijen van 6 fietsen — kies je plek"),
-        new("Yoga", "Zaal 1", "Ontspannen flow voor alle niveaus"),
-        new("Bootcamp", "Buiten", "Intensieve buitentraining"),
-        new("Boxing", "Buiten", "Techniek en conditie"),
-        new("Bodyshape", "Zaal 2", "Les om je hele lichaam te vormen"),
-        new("Club Power", "Zaal 2", "Krachttraining met gewichten"),
-        new("XCO", "Zaal 3", "Crosstraining met XCO-materiaal"),
-        new("Total Body Workout", "Zaal 3", "Conditietraining voor het hele lichaam"),
-    ];
+    private List<GetWorkoutDto> _workouts = [];
+    private List<GetSubscriptionPlanDto> _plans = [];
+    private Guid _featuredPlanId;
+    private bool _loading;
 
-    private List<PlanInfo> _plans =
-    [
-        new("2x per week", "29/mnd", "Tot twee keer per week trainen, maandelijks gefactureerd"),
-        new("2x per week", "299/jr", "Tot twee keer per week trainen, jaarlijks gefactureerd"),
-        new("Onbeperkt", "55/mnd", "Onbeperkt trainen, maandelijks gefactureerd", Featured: true),
-        new("Onbeperkt", "549/jr", "Onbeperkt trainen, jaarlijks gefactureerd"),
-    ];
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        _workouts = await Api.GetListAsync<GetWorkoutDto>("api/workout");
+        _plans = await Api.GetListAsync<GetSubscriptionPlanDto>("api/subscriptionplan/plans");
+
+        // Highlight exactly one plan as "Most popular": the unlimited plan with the shortest term
+        // (i.e. the monthly unlimited). Falls back to none when there's no unlimited plan.
+        _featuredPlanId = _plans
+            .Where(p => p.WeeklyCreditAmount >= UnlimitedThreshold)
+            .OrderBy(p => p.DurationInMonths)
+            .Select(p => p.Id)
+            .FirstOrDefault();
+
+        _loading = false;
+    }
+
+    private bool IsFeatured(GetSubscriptionPlanDto plan) => plan.Id == _featuredPlanId;
+
+    private static string PlanCaption(GetSubscriptionPlanDto plan)
+    {
+        string period = plan.DurationInMonths == 12 ? "per year"
+            : plan.DurationInMonths == 1 ? "per month"
+            : $"per {plan.DurationInMonths} months";
+        string credits = plan.WeeklyCreditAmount >= UnlimitedThreshold ? "Unlimited training" : $"{plan.WeeklyCreditAmount}x per week";
+        return $"{credits}, billed {period}";
+    }
 }

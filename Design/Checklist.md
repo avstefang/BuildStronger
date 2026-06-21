@@ -15,39 +15,39 @@
     - [ ] minimaal één waarin je interactie tussen de .NET MAUI app en de gebruikte backend illustreert.
 
 ## Blazor wasm applicatie
-- [ ] Blazor beheer applicatie voor de medewerkers
+- [X] Blazor beheer applicatie voor de medewerkers
 - [ ] Bevat de volgende beheer elementen:
-    - [ ] Informatie over de workouts
-    - [ ] Informatie over de trainers
-    - [ ] Informatie over de locaties
-    - [ ] Informatie over het lesrooster
-    - [ ] Nieuwe workouts (sport) toevoegen
-    - [ ] Lessen per workout inplannen in rooster (CRUD)
-        - [ ] Les start op specifieke tijd
-        - [ ] Les heeft een bepaalde tijdsduur in minuten
-        - [ ] Les heeft altijd een locatie én instructeur
-        - [ ] Les moet eenmalig of repeterend in het rooster gezet kunnen worden (dag, week, maand, einddatum of aantal herhalingen (ING bankieren app))
-    - [ ] Instructeurs kunnen veranderen en kan op nnb (nog niet bekend) komen te staan
-    - [ ] Medewerkers hebben CRUD rechten
-    - [ ] Workout verwijderen verwijderd ook alle gekoppelde lessen
-    - [ ] Medewerkers kunnen instructeurs toevoegen met naam en foto
-    - [ ] Medewerkers zien een volledig overzicht van de bezetting van lessen in het verleden, heden en toekomst
-    - [ ] Medewerkers kunnen ledeninformatie zien en de status van het lidmaadschap
+    - [X] Informatie over de workouts
+    - [X] Informatie over de trainers
+    - [?] Informatie over de locaties
+    - [X] Informatie over het lesrooster
+    - [X] Nieuwe workouts (sport) toevoegen
+    - [X] Lessen per workout inplannen in rooster (CRUD)
+        - [X] Les start op specifieke tijd
+        - [X] Les heeft een bepaalde tijdsduur in minuten
+        - [X] Les heeft altijd een locatie én instructeur
+        - [X] Les moet eenmalig of repeterend in het rooster gezet kunnen worden (dag, week, maand, einddatum of aantal herhalingen (ING bankieren app))
+    - [X] Instructeurs kunnen veranderen en kan op nnb (nog niet bekend) komen te staan
+    - [X] Medewerkers hebben CRUD rechten
+    - [X] Workout verwijderen verwijderd ook alle gekoppelde lessen
+    - [?] Medewerkers kunnen instructeurs toevoegen met naam en foto
+    - [?] Medewerkers zien een volledig overzicht van de bezetting van lessen in het verleden, heden en toekomst
+    - [X] Medewerkers kunnen ledeninformatie zien en de status van het lidmaadschap
 - [ ] Laat geïnteresseerden de volgende dingen zien:
-    - [ ] Aanbod van lessen
-    - [ ] Abonnement tarieven
-    - [ ] Aanmelden voor nieuwe leden
-    - [ ] Is een uithangbord
+    - [X] Aanbod van lessen
+    - [X] Abonnement tarieven
+    - [X] Aanmelden voor nieuwe leden
+    - [X] Is een uithangbord
     - [ ] (.NET MAUI) App kan worden gedownload
-    - [ ] Lid kan kiezen wanneer lidmaadschap in kan gaan
-    - [ ] Lid krijgt email met daarin bevestiging van betaling en aanmelding
-- [ ] Huidige abonnementen:
-    - [ ] 2x per week sporten - €30,- per maand of €299,- per jaar
-    - [ ] Onbeperkt - €55,- per maand of 549,- per jaar
-- [ ] Ruimtes in de sportclub:
-    - [ ] 3 ruimten voor groepslessen (zoals yoga, bodyshape, club power, xco, total body workout, …) Capaciteit zaal 1: 42 Capaciteit zaal 2: 32 Capaciteit zaal 3: 24
-    - [ ] 1 buitenruimte (capaciteit 20 leden) voor outdoor bootcamp en boksen
-    - [ ] 1 spinningruimte met 4 rijen van ieder 6 fietsen. Dit is de enige les waarbij bij het aanmelden een specifieke plek (fiets) gekozen kan worden.
+    - [X] Lid kan kiezen wanneer lidmaadschap in kan gaan
+    - [X] Lid krijgt email met daarin bevestiging van betaling en aanmelding
+- [X] Huidige abonnementen:
+    - [X] 2x per week sporten - €30,- per maand of €299,- per jaar
+    - [X] Onbeperkt - €55,- per maand of 549,- per jaar
+- [X] Ruimtes in de sportclub:
+    - [X] 3 ruimten voor groepslessen (zoals yoga, bodyshape, club power, xco, total body workout, …) Capaciteit zaal 1: 42 Capaciteit zaal 2: 32 Capaciteit zaal 3: 24
+    - [X] 1 buitenruimte (capaciteit 20 leden) voor outdoor bootcamp en boksen
+    - [X] 1 spinningruimte met 4 rijen van ieder 6 fietsen. Dit is de enige les waarbij bij het aanmelden een specifieke plek (fiets) gekozen kan worden.
 
 ## C# multiplatform Applicatie
 - [ ] Een functioneel geteste en werkende .NET MAUI cross-platform applicatie

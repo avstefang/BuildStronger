@@ -40,10 +40,21 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
             throw new Exception($"Room with ID {dto.RoomId} not found.");
         Workout? workout = await _workoutRepository.GetWorkoutByIdAsync(dto.WorkoutId) ??
             throw new Exception($"Workout with ID {dto.WorkoutId} not found.");
-        Schedule? schedule = await _scheduleRepository.GetScheduleByIdAsync(dto.ScheduleId) ??
-            throw new Exception($"Schedule with ID {dto.ScheduleId} not found.");
+
+        // Build the schedule (weekly slot, recurring by count or until a date). The schedule's FK is on
+        // its own side (LessonId), so it must be saved together with the lesson — not separately, or its
+        // LessonId would be empty. Adding the lesson cascades the insert and sets the FK correctly.
+        Repetition repetition = new(dto.RepetitionCount, dto.RepetitionEndDate);
+        Schedule schedule = new(dto.StartTime, dto.StartDay, repetition);
 
         Lesson lesson = new(workout, schedule, dto.MaxCapacity, room, dto.CustomDuration);
+
+        if (dto.InstructorId != Guid.Empty && dto.InstructorId is Guid instructorId)
+        {
+            Instructor instructor = await _instructorRepository.GetInstructorByIdAsync(instructorId);
+            lesson.AssignInstructor(instructor);
+        }
+
         await _lessonRepository.AddLessonAsync(lesson);
         return lesson.ToDto();
     }
@@ -53,18 +64,28 @@ public class LessonService(ILessonRepository lessonRepository, IWorkoutRepositor
         Lesson? lesson = await _lessonRepository.GetLessonByIdAsync(dto.Id) ??
             throw new Exception($"Lesson with ID {dto.Id} not found.");
 
-        if (dto.ScheduleId != null)
-        {
-            Schedule schedule = await _scheduleRepository.GetScheduleByIdAsync(dto.ScheduleId.Value)
-                ?? throw new Exception($"Schedule with ID {dto.ScheduleId} not found.");
-            lesson.UpdateSchedule(schedule);
-        }
         if (dto.MaxCapacity != null)
             lesson.UpdateMaxCapacity(dto.MaxCapacity.Value);
         if (dto.CustomDuration != null)
             lesson.UpdateCustomDuration(dto.CustomDuration.Value);
+        if (dto.InstructorId is Guid instructorId)
+        {
+            Instructor instructor = await _instructorRepository.GetInstructorByIdAsync(instructorId);
+            lesson.AssignInstructor(instructor);
+        }
 
         await _lessonRepository.UpdateLessonAsync(lesson);
+
+        // Update the lesson's existing schedule slot in place (day/time/recurrence).
+        if (dto.StartTime is TimeOnly startTime && dto.StartDay is DayOfWeek startDay)
+        {
+            Repetition? repetition = dto.RepetitionCount != null || dto.RepetitionEndDate != null
+                ? new Repetition(dto.RepetitionCount, dto.RepetitionEndDate)
+                : null;
+            UpdateScheduleDto scheduleDto = new(lesson.Schedule.Id, startTime, startDay, repetition);
+            await _scheduleRepository.UpdateScheduleAsync(scheduleDto);
+        }
+
         return lesson.ToDto();
     }
 

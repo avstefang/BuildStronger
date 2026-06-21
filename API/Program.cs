@@ -15,6 +15,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+// Allow the Blazor WASM staff portal (a different origin) to call the API. Bearer tokens travel in
+// the Authorization header, not cookies, so any-origin is fine for this dev setup.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowWebApp", policy =>
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+});
+
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // DbContexts
@@ -82,6 +90,7 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 // Services
 builder.Services.AddScoped<AthleteService>();
+builder.Services.AddScoped<InstructorService>();
 builder.Services.AddScoped<SubscriptionService>();
 builder.Services.AddScoped<SubscriptionPlanService>();
 builder.Services.AddScoped<WorkoutService>();
@@ -103,6 +112,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowWebApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

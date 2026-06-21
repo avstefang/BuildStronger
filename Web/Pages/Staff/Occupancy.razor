@@ -1,68 +1,77 @@
 @page "/staff/occupancy"
 @layout StaffLayout
+@inject ApiClient Api
 
-<PageTitle>Bezetting — BuildStronger Medewerkers</PageTitle>
+<PageTitle>Occupancy — BuildStronger Staff</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Lesbezetting</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Lesson occupancy</MudText>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+}
 
 <MudGrid Class="mb-4">
     <MudItem xs="12" sm="4">
-        <MudDateRangePicker @bind-DateRange="_dateRange" Label="Periode" Variant="Variant.Outlined" />
-    </MudItem>
-    <MudItem xs="12" sm="4">
-        <MudSelect @bind-Value="_filterWorkout" Label="Workout" Variant="Variant.Outlined">
-            <MudSelectItem Value="@("All")">Alle</MudSelectItem>
-            <MudSelectItem Value="@("Spinning")">Spinning</MudSelectItem>
-            <MudSelectItem Value="@("Yoga")">Yoga</MudSelectItem>
-            <MudSelectItem Value="@("Bootcamp")">Bootcamp</MudSelectItem>
+        <MudSelect T="string" @bind-Value="_filterWorkout" Label="Workout" Variant="Variant.Outlined">
+            <MudSelectItem Value="@("All")">All</MudSelectItem>
+            @foreach (string name in WorkoutNames)
+            {
+                <MudSelectItem Value="@name">@name</MudSelectItem>
+            }
         </MudSelect>
     </MudItem>
 </MudGrid>
 
 <MudTable Items="FilteredLessons" Hover="true" Striped="true" Bordered="true">
     <HeaderContent>
-        <MudTh>Datum</MudTh>
         <MudTh>Workout</MudTh>
-        <MudTh>Instructeur</MudTh>
-        <MudTh>Starttijd</MudTh>
-        <MudTh>Capaciteit</MudTh>
-        <MudTh>Ingeschreven</MudTh>
-        <MudTh>Bezetting</MudTh>
+        <MudTh>Day</MudTh>
+        <MudTh>Start time</MudTh>
+        <MudTh>Instructor</MudTh>
+        <MudTh>Capacity</MudTh>
+        <MudTh>Registered</MudTh>
+        <MudTh>Occupancy</MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd>@context.Date.ToShortDateString()</MudTd>
-        <MudTd>@context.Workout</MudTd>
-        <MudTd>@context.Instructor</MudTd>
-        <MudTd>@context.StartTime</MudTd>
-        <MudTd>@context.Capacity</MudTd>
-        <MudTd>@context.Registered</MudTd>
+        <MudTd>@context.Workout.Name</MudTd>
+        <MudTd>@context.Schedule.StartDay</MudTd>
+        <MudTd>@context.Schedule.StartTime.ToString("HH\\:mm")</MudTd>
+        <MudTd>@(context.Instructor?.FullName ?? "Not assigned")</MudTd>
+        <MudTd>@context.MaxCapacity</MudTd>
+        <MudTd>@context.BookedCount</MudTd>
         <MudTd>
-            <MudProgressLinear Value="@((double)context.Registered / context.Capacity * 100)"
-                               Color="@(context.Registered >= context.Capacity ? Color.Error : Color.Success)"
+            <MudProgressLinear Value="@OccupancyPercent(context)"
+                               Color="@(context.BookedCount >= context.MaxCapacity ? Color.Error : Color.Success)"
                                Rounded="true" Size="Size.Medium" />
-            @context.Registered / @context.Capacity
+            @context.BookedCount / @context.MaxCapacity
         </MudTd>
     </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No lessons found.</MudText>
+    </NoRecordsContent>
 </MudTable>
 
 @code {
-    private record OccupancyItem(DateTime Date, string Workout, string Instructor, string StartTime, int Capacity, int Registered);
-
-    private DateRange _dateRange = new(DateTime.Today.AddDays(-7), DateTime.Today.AddDays(7));
+    private List<GetLessonDto> _lessons = [];
+    private bool _loading;
     private string _filterWorkout = "All";
 
-    private List<OccupancyItem> _lessons =
-    [
-        new(DateTime.Today.AddDays(-3), "Spinning", "Lisa van der Berg", "07:00", 24, 22),
-        new(DateTime.Today.AddDays(-3), "Yoga", "Mark Jansen", "09:00", 42, 18),
-        new(DateTime.Today.AddDays(-1), "Bootcamp", "Nog onbekend", "10:00", 20, 20),
-        new(DateTime.Today, "Spinning", "Lisa van der Berg", "07:00", 24, 10),
-        new(DateTime.Today.AddDays(2), "Yoga", "Mark Jansen", "09:00", 42, 5),
-        new(DateTime.Today.AddDays(4), "Bootcamp", "Nog onbekend", "10:00", 20, 3),
-    ];
+    protected override async Task OnInitializedAsync() => await LoadAsync();
 
-    private IEnumerable<OccupancyItem> FilteredLessons => _lessons.Where(l =>
-        l.Date >= (_dateRange.Start ?? DateTime.MinValue) &&
-        l.Date <= (_dateRange.End ?? DateTime.MaxValue) &&
-        (_filterWorkout == "All" || l.Workout == _filterWorkout));
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _lessons = await Api.GetListAsync<GetLessonDto>("api/lesson");
+        _loading = false;
+    }
+
+    private IEnumerable<string> WorkoutNames =>
+        _lessons.Select(l => l.Workout.Name).Distinct().OrderBy(n => n);
+
+    private IEnumerable<GetLessonDto> FilteredLessons =>
+        _lessons.Where(l => _filterWorkout == "All" || l.Workout.Name == _filterWorkout);
+
+    private static double OccupancyPercent(GetLessonDto lesson) =>
+        lesson.MaxCapacity <= 0 ? 0 : Math.Min(100, (double)lesson.BookedCount / lesson.MaxCapacity * 100);
 }

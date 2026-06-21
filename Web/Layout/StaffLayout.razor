@@ -1,23 +1,26 @@
 @inherits LayoutComponentBase
+@inject TokenStore TokenStore
+@inject NavigationManager Nav
 
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Primary">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
-        <MudText Typo="Typo.h6" Class="ml-3">BuildStronger — Medewerkers</MudText>
+        <MudText Typo="Typo.h6" Class="ml-3">BuildStronger — Staff</MudText>
         <MudSpacer />
-        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Publieke site</MudButton>
+        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Public site</MudButton>
+        <MudButton OnClick="Logout" Color="Color.Inherit" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Logout">Log out</MudButton>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive">
         <MudDrawerHeader>
-            <MudText Typo="Typo.subtitle1"><b>Medewerkersportaal</b></MudText>
+            <MudText Typo="Typo.subtitle1"><b>Staff portal</b></MudText>
         </MudDrawerHeader>
         <MudNavMenu>
             <MudNavLink Href="/staff/workouts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FitnessCenter">Workouts</MudNavLink>
-            <MudNavLink Href="/staff/instructors" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Instructeurs</MudNavLink>
-            <MudNavLink Href="/staff/schedule" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarMonth">Rooster</MudNavLink>
-            <MudNavLink Href="/staff/occupancy" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Bezetting</MudNavLink>
-            <MudNavLink Href="/staff/members" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Leden</MudNavLink>
+            <MudNavLink Href="/staff/instructors" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Instructors</MudNavLink>
+            <MudNavLink Href="/staff/schedule" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarMonth">Schedule</MudNavLink>
+            <MudNavLink Href="/staff/occupancy" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart">Occupancy</MudNavLink>
+            <MudNavLink Href="/staff/members" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">Members</MudNavLink>
         </MudNavMenu>
     </MudDrawer>
 
@@ -31,4 +34,21 @@
 @code {
     private bool _drawerOpen = true;
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    // No token means not signed in as staff — bounce to the login page.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        string? token = await TokenStore.GetAsync();
+        if (string.IsNullOrWhiteSpace(token))
+            Nav.NavigateTo("/login");
+    }
+
+    private async Task Logout()
+    {
+        await TokenStore.ClearAsync();
+        Nav.NavigateTo("/login");
+    }
 }

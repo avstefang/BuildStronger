@@ -8,4 +8,5 @@ public class GetAthleteDto
     public string LastName { get; init; } = string.Empty;
     public string Username { get; init; } = string.Empty;
     public string Role { get; init; } = string.Empty;
+    public GetSubscriptionDto? Subscription { get; init; }
 }

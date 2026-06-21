@@ -1,22 +1,30 @@
 @page "/staff/members"
 @layout StaffLayout
+@inject ApiClient Api
+@inject ISnackbar Snackbar
 
-<PageTitle>Leden — BuildStronger Medewerkers</PageTitle>
+<PageTitle>Members — BuildStronger Staff</PageTitle>
 
-<MudText Typo="Typo.h4" GutterBottom="true">Leden</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Members</MudText>
 
-<MudTextField @bind-Value="_search" Placeholder="Zoek op naam of e-mail" Adornment="Adornment.Start"
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+}
+
+<MudTextField @bind-Value="_search" Placeholder="Search by name or email" Adornment="Adornment.Start"
               AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" Class="mb-4" />
 
 <MudTable Items="FilteredMembers" Hover="true" Striped="true" Bordered="true">
     <HeaderContent>
-        <MudTh>Naam</MudTh>
-        <MudTh>E-mail</MudTh>
-        <MudTh>Gebruikersnaam</MudTh>
-        <MudTh>Abonnement</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Username</MudTh>
+        <MudTh>Subscription</MudTh>
         <MudTh>Status</MudTh>
-        <MudTh>Startdatum</MudTh>
-        <MudTh>Einddatum</MudTh>
+        <MudTh>Start date</MudTh>
+        <MudTh>End date</MudTh>
+        <MudTh>Promote to instructor</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.Name</MudTd>
@@ -26,22 +34,42 @@
         <MudTd>
             <MudChip T="string" Color="@StatusColor(context.Status)" Size="Size.Small">@context.Status</MudChip>
         </MudTd>
-        <MudTd>@context.StartDate.ToShortDateString()</MudTd>
-        <MudTd>@context.EndDate.ToShortDateString()</MudTd>
+        <MudTd>@(context.StartDate == DateOnly.MinValue ? "-" : context.StartDate.ToShortDateString())</MudTd>
+        <MudTd>@(context.EndDate == DateOnly.MinValue ? "-" : context.EndDate.ToShortDateString())</MudTd>
+        <MudTd>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="@(() => PromoteToInstructor(context.Email))" Disabled="@context.IsInstructor">
+                Promote
+            </MudButton>
+        </MudTd>
     </RowTemplate>
 </MudTable>
 
 @code {
-    private record MemberItem(string Name, string Email, string Username, string Plan, string Status, DateTime StartDate, DateTime EndDate);
+    private record MemberItem(string Name, string Email, string Username, string Plan, string Status, DateOnly StartDate, DateOnly EndDate, bool IsInstructor);
 
+    private bool _loading = false;
     private string _search = string.Empty;
 
-    private List<MemberItem> _members =
-    [
-        new("Anna de Vries", "anna@example.com", "anna_dv", "Onbeperkt — maandelijks", "Actief", DateTime.Today.AddMonths(-3), DateTime.Today.AddMonths(1)),
-        new("Tom Bakker", "tom@example.com", "tombakker", "2x per week — jaarlijks", "Actief", DateTime.Today.AddMonths(-6), DateTime.Today.AddMonths(6)),
-        new("Sophie Mulder", "sophie@example.com", "sophiem", "Onbeperkt — jaarlijks", "Verlopen", DateTime.Today.AddYears(-1), DateTime.Today.AddDays(-5)),
-    ];
+    private List<MemberItem> _members = [];
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        IEnumerable<GetAthleteDto> athleteDtos = await Api.GetListAsync<GetAthleteDto>("api/athlete");
+        _members = athleteDtos.Select(a => new MemberItem(
+            a.FirstName + " " + a.LastName,
+            a.Email,
+            a.Username,
+            a.Subscription?.SubscriptionPlan.Name ?? "No subscription",
+            a.Subscription?.Status ?? "No subscription",
+            a.Subscription?.StartDate ?? DateOnly.MinValue,
+            a.Subscription?.EndDate ?? DateOnly.MinValue,
+            a.Role.Contains("Instructor")
+        )).ToList();
+        _loading = false;
+    }
 
     private IEnumerable<MemberItem> FilteredMembers => _members.Where(m =>
         string.IsNullOrWhiteSpace(_search) ||
@@ -50,9 +78,31 @@
 
     private Color StatusColor(string status) => status switch
     {
-        "Actief" => Color.Success,
-        "Verlopen" => Color.Error,
-        "Geannuleerd" => Color.Warning,
+        "Active" => Color.Success,
+        "Expired" => Color.Error,
+        "Cancelled" => Color.Warning,
+        "WaitingActivation" => Color.Info,
         _ => Color.Default
     };
+
+    private async Task PromoteToInstructor(string email)
+    {
+        _loading = true;
+        try
+        {
+            if (await Api.PutAsync($"api/athlete/{email}/promote"))
+            {
+                Snackbar.Add($"{email} has been promoted to instructor.", Severity.Success);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.Add("Promotion failed.", Severity.Error);
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 }

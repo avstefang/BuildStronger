@@ -1,79 +1,77 @@
 @page "/staff/workouts"
 @layout StaffLayout
+@inject ApiClient Api
+@inject ISnackbar Snackbar
 
-<PageTitle>Workouts — BuildStronger Medewerkers</PageTitle>
+<PageTitle>Workouts — BuildStronger Staff</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">Workouts</MudText>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog" Class="mb-4">
-    Workout toevoegen
+    Add workout
 </MudButton>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="mb-2" />
+}
 
 <MudTable Items="_workouts" Hover="true" Striped="true" Bordered="true">
     <HeaderContent>
-        <MudTh>Naam</MudTh>
-        <MudTh>Omschrijving</MudTh>
-        <MudTh>Duur (min)</MudTh>
-        <MudTh>Zaal</MudTh>
-        <MudTh>Acties</MudTh>
+        <MudTh>Name</MudTh>
+        <MudTh>Description</MudTh>
+        <MudTh>Duration (min)</MudTh>
+        <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd>@context.Name</MudTd>
         <MudTd>@context.Description</MudTd>
-        <MudTd>@context.DurationMinutes</MudTd>
-        <MudTd>@context.Room</MudTd>
+        <MudTd>@context.DurationInMinutes</MudTd>
         <MudTd>
             <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => OpenEditDialog(context)" />
             <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteWorkout(context)" />
         </MudTd>
     </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No workouts yet. Add one.</MudText>
+    </NoRecordsContent>
 </MudTable>
 
 <MudDialog @bind-Visible="_dialogOpen">
-    <TitleContent>@(_editTarget == null ? "Workout toevoegen" : "Workout bewerken")</TitleContent>
+    <TitleContent>@(_editTarget == null ? "Add workout" : "Edit workout")</TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="_form.Name" Label="Naam" Variant="Variant.Outlined" Class="mb-3" />
-        <MudTextField @bind-Value="_form.Description" Label="Omschrijving" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
-        <MudNumericField @bind-Value="_form.DurationMinutes" Label="Duur (minuten)" Variant="Variant.Outlined" Min="1" Class="mb-3" />
-        <MudSelect @bind-Value="_form.Room" Label="Zaal" Variant="Variant.Outlined">
-            <MudSelectItem Value="@("Zaal 1 (cap. 42)")">Zaal 1 (cap. 42)</MudSelectItem>
-            <MudSelectItem Value="@("Zaal 2 (cap. 32)")">Zaal 2 (cap. 32)</MudSelectItem>
-            <MudSelectItem Value="@("Zaal 3 (cap. 24)")">Zaal 3 (cap. 24)</MudSelectItem>
-            <MudSelectItem Value="@("Buiten (cap. 20)")">Buiten (cap. 20)</MudSelectItem>
-            <MudSelectItem Value="@("Spinningzaal (cap. 24)")">Spinningzaal (cap. 24)</MudSelectItem>
-        </MudSelect>
+        <MudTextField @bind-Value="_form.Name" Label="Name" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="_form.Description" Label="Description" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
+        <MudNumericField @bind-Value="_form.DurationInMinutes" Label="Duration (minutes)" Variant="Variant.Outlined" Min="1" />
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => _dialogOpen = false">Annuleren</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveWorkout">Opslaan</MudButton>
+        <MudButton OnClick="() => _dialogOpen = false">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveWorkout" Disabled="_loading">Save</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
-    private record WorkoutItem(string Id, string Name, string Description, int DurationMinutes, string Room);
+    private List<GetWorkoutDto> _workouts = [];
+    private bool _loading;
 
-    private List<WorkoutItem> _workouts =
-    [
-        new("1", "Spinning", "Cardio op de fiets", 45, "Spinningzaal (cap. 24)"),
-        new("2", "Yoga", "Flexibiliteit en mindfulness", 60, "Zaal 1 (cap. 42)"),
-        new("3", "Bootcamp", "Intensieve buitentraining", 50, "Buiten (cap. 20)"),
-        new("4", "Boxing", "Techniek en conditie", 60, "Buiten (cap. 20)"),
-        new("5", "Bodyshape", "Hele lichaam vormen", 45, "Zaal 2 (cap. 32)"),
-        new("6", "Club Power", "Kracht met gewichten", 50, "Zaal 2 (cap. 32)"),
-        new("7", "XCO", "Crosstraining", 45, "Zaal 3 (cap. 24)"),
-        new("8", "Total Body Workout", "Conditie voor het hele lichaam", 60, "Zaal 3 (cap. 24)"),
-    ];
-
-    private bool _dialogOpen = false;
-    private WorkoutItem? _editTarget = null;
+    private bool _dialogOpen;
+    private GetWorkoutDto? _editTarget;
     private WorkoutFormModel _form = new();
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _workouts = await Api.GetListAsync<GetWorkoutDto>("api/workout");
+        _loading = false;
+    }
 
     private class WorkoutFormModel
     {
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public int DurationMinutes { get; set; } = 45;
-        public string Room { get; set; } = "Zaal 1 (cap. 42)";
+        public int DurationInMinutes { get; set; } = 45;
     }
 
     private void OpenAddDialog()
@@ -83,22 +81,50 @@
         _dialogOpen = true;
     }
 
-    private void OpenEditDialog(WorkoutItem item)
+    private void OpenEditDialog(GetWorkoutDto item)
     {
         _editTarget = item;
-        _form = new() { Name = item.Name, Description = item.Description, DurationMinutes = item.DurationMinutes, Room = item.Room };
+        _form = new() { Name = item.Name, Description = item.Description, DurationInMinutes = item.DurationInMinutes };
         _dialogOpen = true;
     }
 
-    private void SaveWorkout()
+    private async Task SaveWorkout()
     {
-        // TODO: call API to add or update workout
-        _dialogOpen = false;
+        _loading = true;
+        try
+        {
+            bool ok = _editTarget is null
+                ? await Api.PostAsync("api/workout", new CreateWorkoutDto(_form.Name, _form.Description, _form.DurationInMinutes))
+                : await Api.PutAsync($"api/workout/{_editTarget.Id}", new UpdateWorkoutDto(_form.Name, _form.Description, _form.DurationInMinutes));
+
+            if (ok)
+            {
+                _dialogOpen = false;
+                Snackbar.Add("Workout saved.", Severity.Success);
+                await LoadAsync();
+            }
+            else
+            {
+                Snackbar.Add("Saving failed.", Severity.Error);
+            }
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
-    private void DeleteWorkout(WorkoutItem item)
+    private async Task DeleteWorkout(GetWorkoutDto item)
     {
-        // TODO: call API to delete workout (also deletes all linked lessons)
-        _workouts.Remove(item);
+        // Note: deleting a workout also removes its linked lessons (handled server-side).
+        if (await Api.DeleteAsync($"api/workout/{item.Id}"))
+        {
+            Snackbar.Add("Workout removed.", Severity.Success);
+            await LoadAsync();
+        }
+        else
+        {
+            Snackbar.Add("Removing failed.", Severity.Error);
+        }
     }
 }

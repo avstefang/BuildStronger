@@ -47,13 +47,19 @@ public class InstructorRepository(AthleteDbContext dbContext) : IInstructorRepos
         Athlete athlete = await dbContext.Set<Athlete>().FindAsync(dto.AthleteId)
             ?? throw new InvalidOperationException($"Instructor with ID {dto.AthleteId} not found.");
 
+        // The Change*/Set* methods throw when the value is unchanged, so only apply real changes —
+        // otherwise editing one field (e.g. the name) would fail on the others.
         EmailAddress emailAddress = new(dto.EmailAddress);
-        athlete.ChangeEmailAddress(emailAddress);
+        if (athlete.EmailAddress != emailAddress)
+            athlete.ChangeEmailAddress(emailAddress);
 
         FullName fullName = new(dto.FirstName, dto.LastName);
-        athlete.ChangeFullName(fullName);
+        if (athlete.FullName != fullName)
+            athlete.ChangeFullName(fullName);
 
-        athlete.SetUsername(dto.Username);
+        if (athlete.Username != dto.Username)
+            athlete.SetUsername(dto.Username);
+
         dbContext.Set<Athlete>().Update(athlete);
         await dbContext.SaveChangesAsync();
     }

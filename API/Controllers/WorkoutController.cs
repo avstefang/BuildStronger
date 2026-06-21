@@ -7,10 +7,8 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class WorkoutController(WorkoutService workoutService) : ControllerBase
 {
-    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAllWorkouts()
     {
@@ -25,7 +23,6 @@ public class WorkoutController(WorkoutService workoutService) : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetWorkoutById([FromRoute] Guid id)
     {

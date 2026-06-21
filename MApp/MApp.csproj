@@ -95,5 +95,10 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="Test\Unit\" />
+	  <Folder Include="Test\Ui\" />
+	</ItemGroup>
 
 </Project>
